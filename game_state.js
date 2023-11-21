@@ -1,16 +1,15 @@
 import {
+
     make,
-    Cls,
-    DrawText,
+
+    IB2D,
     Preload,
-
-    LoadImage,
-    DrawImage,
-
-    MouseX,
-    MouseY
 } from "./blitz/blitz.js"
 
+import {
+    MouseX,
+    MouseY
+} from "./blitz/input.js"
 
 import Pig from "./box.js"
 import Stack from "./stack.js"
@@ -19,8 +18,8 @@ import Stack from "./stack.js"
 
 let cursor
 
-Preload(()=>{
-    cursor = LoadImage("cursor.png")
+Preload(b =>{
+    cursor = b.LoadImage("cursor.png")
 })
 
 
@@ -32,8 +31,8 @@ class IGameThing {
     dead
     /** @param {GameState} gamestate */
     update(gamestate) { }
-    /** @param {GameState} gamestate */
-    render(gamestate) { }
+    /** @param {IB2D} b2d */
+    render(b2d) { }
 }
 
 class GameState {
@@ -44,7 +43,6 @@ class GameState {
     _alives = new Stack(MAX_THINGS)
 
     ticks = 60
-
 
     /** @param {IGameThing} what */
     spawn(what) {
@@ -93,20 +91,23 @@ class GameState {
         this._alives.reset()
     }
 
-    render() {
-        Cls(0,0,0)
+    /**
+     * @param {IB2D} b 
+     */
+    render(b) {
+        b.Cls(0,0,0)
 
-        DrawText("Scene stack top:" + this._scene.top, 20, 20)
-        DrawText("Alives stack top:" + this._alives.top, 20, 40)
+        b.DrawText("Scene stack top:" + this._scene.top, 20, 20)
+        b.DrawText("Alives stack top:" + this._alives.top, 20, 40)
 
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
-            obj.render && obj.render()
+            obj.render && obj.render(b)
         }
 
-        DrawImage( cursor, MouseX(), MouseY() )
+        b.DrawImage( cursor, MouseX(), MouseY() )
 
     }
 }
 
-export default GameState
+export { GameState, IGameThing }

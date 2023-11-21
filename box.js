@@ -1,14 +1,15 @@
-import { make, LoadImage, DrawImage, Preload, Sin, Cos } from "./blitz/blitz"
-import GameState from "./game_state"
+import { make, IB2D, Preload } from "./blitz/blitz"
+import {GameState, IGameThing} from "./game_state"
 
 import Missil from "./missil"
 
 let sprite
 
-Preload( ()=>{
-  sprite = LoadImage("porco.png")
+Preload( b =>{
+  sprite = b.LoadImage("porco.png")
 })
 
+/** @implements {IGameThing} */
 class Pig {
     dead = false
     x = 0
@@ -62,8 +63,9 @@ class Pig {
       this.y += this.sy
     }
 
-    render(){
-      DrawImage( sprite, this.x, this.y )
+    /** @param {IB2D} b  */
+    render(b){
+      b.DrawImage( sprite, this.x, this.y )
     }
 
     initialize(){

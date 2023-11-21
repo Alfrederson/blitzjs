@@ -1,13 +1,20 @@
-import { LoadImage, DrawImage, Preload } from "./blitz/blitz"
+import {
+  IB2D, 
+  Preload
+} from "./blitz/blitz"
 
-import GameState from "./game_state"
+import {
+  IGameThing, 
+  GameState
+} from "./game_state"
 
 let sprite
 
-Preload(()=>{
-  sprite = LoadImage("missil.png")
+Preload(b => {
+  sprite = b.LoadImage("missil.png")
 })
 
+/** @implements {IGameThing} */
 export default class {
     dead = false
     x = 0
@@ -33,8 +40,11 @@ export default class {
       this.y += this.sy
     }
 
-    render(){
-      DrawImage( sprite, this.x, this.y )
+    /**
+     * @param {IB2D} b 
+     */
+    render(b){
+      b.DrawImage( sprite, this.x, this.y )
     }
 
     initialize(){

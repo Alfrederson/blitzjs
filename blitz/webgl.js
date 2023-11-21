@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix"
+import { IB2D, IImage } from "./blitz"
 
 /**
  * WebGL program with attribute and uniform locations.
@@ -12,27 +13,7 @@ import { mat4 } from "gl-matrix"
  * @property {WebGLUniformLocation | null} uniformLocations.drawColor - The location of the drawColor uniform.
 */
 
-const _gl = {
-    /** @type {WebGLRenderingContext|null} */
-    ctx : null,
 
-    /** @type {WebGLProgram|null} */
-    shaderProgram : null,
-
-    /** @type {WebGLProgramInfo|null} */
-    programInfo : null,
-
-    /** @type {WebGLBuffer|null} */
-    positionBuffer : null,
-
-    /** @type {mat4} */
-    projectionMatrix : mat4.create()
-}
-
-const _state = {
-    scale : [1,1],
-    drawColor : [1,1,1,1]
-}
 
 const vsSource = `
     attribute vec4 aVertexPosition;
@@ -139,152 +120,184 @@ function setPositionAttribute(ctx, buffers, programInfo){
     )
 }
 
-/**
- * 
- * @param {number} width 
- * @param {number} height 
- * @param {string} elementId 
- */
-function Graphics(width,height, elementId){
-    /** @type {HTMLCanvasElement | null} */
-    // @ts-ignore
-    const element = document.getElementById(elementId);
+/** @implements {IB2D} */
+class WGL_B2D {
+    /** @type {WebGLRenderingContext|null} */
+    ctx = null
 
-    if(!element){
-        throw "Não achei o elemento."
-    }
-    if(!(element instanceof HTMLCanvasElement)){
-        throw "Elemento não é um canvas."
-    }
+    /** @type {WebGLProgram|null} */
+    shaderProgram = null
 
-    element.width=width
-    element.height=height
+    /** @type {WebGLProgramInfo|null} */
+    programInfo = null
 
-    _gl.ctx = element.getContext("webgl");
+    /** @type {WebGLBuffer|null} */
+    positionBuffer = null
 
-    if(!_gl.ctx)
-        throw "Não consegui pegar um contexto de renderização."
-    // iniciar os shadeus lá
-    _gl.shaderProgram = initShaderProgram(_gl.ctx, vsSource, fsSource)
+    /** @type {mat4} */
+    projectionMatrix = mat4.create()
 
-    _gl.programInfo = {
-        program : _gl.shaderProgram,
-        attribLocations :{
-            vertexPosition: _gl.ctx.getAttribLocation(_gl.shaderProgram,"aVertexPosition")
-        },
-        uniformLocations: {
-            projectionMatrix: _gl.ctx.getUniformLocation(_gl.shaderProgram,"uProjectionMatrix"),
-            modelViewMatrix: _gl.ctx.getUniformLocation(_gl.shaderProgram,"uModelViewMatrix"),
-            drawColor : _gl.ctx.getUniformLocation(_gl.shaderProgram,"uDrawColor")
+    scale = [1,1]
+    drawColor = [1,1,1,1]
+
+    /**
+     * Carrega uma imagem.
+     * @param {string} imageName 
+     */
+    LoadImage(imageName){
+        console.log("Loading ",imageName)
+        return {
+            width : 32,
+            height : 32,
+            frameCount : 1
         }
     }
 
-    _gl.positionBuffer = {
-        position : initPositionBuffer(_gl.ctx)
+    LoadAnimImage(imageName,frameWidth, frameHeight, firstFrame,frameCount){
+
     }
 
-    _gl.projectionMatrix = mat4.create()
-    mat4.ortho(_gl.projectionMatrix,0,width,height,0,-1,1)    
 
-}
+    /**
+     * 
+     * @param {number} width 
+     * @param {number} height 
+     * @param {string} elementId 
+     */
+    Graphics(width,height, elementId){
+        /** @type {HTMLCanvasElement | null} */
+        // @ts-ignore
+        const element = document.getElementById(elementId);
 
-/**
- * Limpa a tela.
- * @param {number} r 
- * @param {number} g 
- * @param {number} b 
- */
-function Cls(r,g,b){
-    _gl.ctx?.clearColor(r/255,g/255,b/255,1.0)
-    _gl.ctx?.clear(_gl.ctx.COLOR_BUFFER_BIT)
-}
+        if(!element){
+            throw "Não achei o elemento."
+        }
+        if(!(element instanceof HTMLCanvasElement)){
+            throw "Elemento não é um canvas."
+        }
 
-/**
- * Carrega uma imagem.
- * @param {string} imageName 
- */
-function LoadImage(imageName){
-    return {
-        width : 32,
-        height : 32
+        const b= document.getElementsByTagName("body")[0]
+
+        element.width=b.clientWidth-8
+        element.height=b.clientHeight-8
+
+        window.addEventListener("resize", ev =>{
+            const b= document.getElementsByTagName("body")[0]
+
+            element.width=b.clientWidth-8
+            element.height=b.clientHeight-8    
+        })
+
+        this.ctx = element.getContext("webgl");
+
+        if(!this.ctx)
+            throw "Não consegui pegar um contexto de renderização."
+        // iniciar os shadeus lá
+        this.shaderProgram = initShaderProgram(this.ctx, vsSource, fsSource)
+
+        this.programInfo = {
+            program : this.shaderProgram,
+            attribLocations :{
+                vertexPosition: this.ctx.getAttribLocation(this.shaderProgram,"aVertexPosition")
+            },
+            uniformLocations: {
+                projectionMatrix: this.ctx.getUniformLocation(this.shaderProgram,"uProjectionMatrix"),
+                modelViewMatrix: this.ctx.getUniformLocation(this.shaderProgram,"uModelViewMatrix"),
+                drawColor : this.ctx.getUniformLocation(this.shaderProgram,"uDrawColor")
+            }
+        }
+
+        this.positionBuffer = {
+            position : initPositionBuffer(this.ctx)
+        }
+
+        this.projectionMatrix = mat4.create()
+        mat4.ortho(this.projectionMatrix,0,width,height,0,-1,1)    
+
+        // faz isso uma vez só....
+        setPositionAttribute(
+            this.ctx,
+            this.positionBuffer,
+            this.programInfo
+        )
+
+        this.ctx.useProgram( this.programInfo.program )
+        
+        // usa aquela matriz de projeção ortogonal uma vez só
+        this.ctx.uniformMatrix4fv(
+            this.programInfo.uniformLocations.projectionMatrix,
+            false, // transpose,
+            this.projectionMatrix
+        )
     }
-}
+    /**
+     * 
+     * @param {number} r 
+     * @param {number} g 
+     * @param {number} b 
+     */
+    Cls(r,g,b){
+        this.ctx?.clearColor(r/255,g/255,b/255,1.0)
+        this.ctx?.clear(this.ctx.COLOR_BUFFER_BIT)            
+    }
 
-function LoadAnimImage(imageName,frameWidth, frameHeight, firstFrame,frameCount){
 
-}
+    /**
+     * @param {IImage} imageHandler
+     * @param {number} x
+     * @param {number} y
+     */
+    DrawImage(imageHandler, x, y){
+        if(!this.ctx)
+            throw "sem contexto"
+        if(!this.programInfo)
+            throw "sem program info"
+    
+        const modelViewMatrix = mat4.create()
+        // cria uma matriz de translação
+        mat4.translate(
+            modelViewMatrix,
+            modelViewMatrix,
+            [x,y,0]
+        )
+        // escala pra deixar no tamanho da imagem...
+        mat4.scale(
+            modelViewMatrix,
+            modelViewMatrix,
+            [imageHandler.width,imageHandler.height,1]
+        )
+        // escala e posiciona o quadradinho
+        this.ctx.uniformMatrix4fv(
+            this.programInfo.uniformLocations.modelViewMatrix,
+            false, // transpose
+            modelViewMatrix
+        )
+        // WEBGL É CHATO DEMAIS
+        // cor
+        this.ctx.uniform4fv(
+            this.programInfo.uniformLocations.drawColor,
+            this.drawColor
+        )
+    
+        this.ctx.drawArrays(
+            this.ctx.TRIANGLE_STRIP,
+            0, // offset
+            4  // vertexCount
+        )
+    }
+    
+    /**
+     * 
+     * @param {string} text 
+     * @param {number} x 
+     * @param {number} y 
+     */
+    DrawText(text,x,y){
 
-function DrawImage(imageHandler, x, y){
-    if(!_gl.ctx)
-        throw "sem contexto"
-    if(!_gl.programInfo)
-        throw "sem program info"
-
-    const modelViewMatrix = mat4.create()
-    // cria uma matriz de translação
-    mat4.translate(
-        modelViewMatrix,
-        modelViewMatrix,
-        [x,y,0]
-    )
-    // escala pra deixar no tamanho da imagem...
-    mat4.scale(
-        modelViewMatrix,
-        modelViewMatrix,
-        [imageHandler.width,imageHandler.height,1]
-    )
-    // escala e posiciona o quadradinho
-    _gl.ctx.uniformMatrix4fv(
-        _gl.programInfo.uniformLocations.modelViewMatrix,
-        false, // transpose
-        modelViewMatrix
-    )
-    // WEBGL É CHATO DEMAIS
-    // cor
-    _gl.ctx.uniform4fv(
-        _gl.programInfo.uniformLocations.drawColor,
-        _state.drawColor
-    )
-
-    _gl.ctx.drawArrays(
-        _gl.ctx.TRIANGLE_STRIP,
-        0, // offset
-        4  // vertexCount
-    )
-}
-
-function BeginDraw(){
-    if(!_gl.ctx)
-        throw "sem contexto"
-    if(!_gl.programInfo)
-        throw "sem program info"
-
-    setPositionAttribute(
-        _gl.ctx,
-        _gl.positionBuffer,
-        _gl.programInfo
-    )
-
-    _gl.ctx.useProgram( _gl.programInfo.program )
-
-    // define os uniformes (globais)
-    _gl.ctx.uniformMatrix4fv(
-        _gl.programInfo.uniformLocations.projectionMatrix,
-        false, // transpose,
-        _gl.projectionMatrix
-    )
-}
-
-function EndDraw(){
+    }
 
 }
 
 export {
-    Graphics,
-    LoadImage,
-    LoadAnimImage,
-    BeginDraw,
-    EndDraw,
-    DrawImage,
-    Cls,
+    WGL_B2D
 }

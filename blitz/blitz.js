@@ -1,17 +1,55 @@
-import {
-    BeginDraw,
-    Cls,
-    DrawImage,
-    EndDraw,
-    Graphics,
-    LoadImage
-} from "./webgl"
+/** @interface */
 
-import {
-    AttachInput,
-    MouseX,
-    MouseY
-} from "./input"
+class IB2D{
+    /**
+     * @param {number} width 
+     * @param {number} height 
+     * @param {string} elementId 
+     */
+    Graphics(width,height,elementId){}
+
+    /**
+     * 
+     * @param {number} r 
+     * @param {number} g 
+     * @param {number} b 
+     */
+    Cls(r,g,b){}
+
+    /**
+     * 
+     * @param {string} text 
+     * @param {number} x 
+     * @param {number} y 
+     */
+    DrawText(text,x,y){}
+
+    /**
+     * @param {string} fileName
+     * @returns {IImage}
+     */
+    LoadImage(fileName){
+        return new IImage()
+    }
+
+    /**
+     * @param {IImage} imageHandler
+     * @param {number} x
+     * @param {number} y
+     */
+    DrawImage(imageHandler,x,y){}
+}
+
+/** @interface */
+class IImage {
+    /** @type {number} */
+    width
+    /** @type {number} */
+    height
+    /** @type {number} */
+    frameCount
+}
+
 
 /**
  * Inicializa um "objeto" com propriedades específicas.
@@ -20,8 +58,6 @@ import {
  * @returns 
  */
 function make(x, properties){
-
-    //let result = Object.create(x)
     x.initialize && x.initialize()
 
     if(properties){
@@ -33,22 +69,19 @@ function make(x, properties){
     return x
 }
 
-
-
-
-
-
 /** @interface */
 class IApp {
-    setup(){}
-    draw(){}
+    /** @param {IB2D} b */
+    setup(b){}
+    /** @param {IB2D} b */
+    draw(b){}
 }
 
 /**
  * Registra uma função para ser executada no preload.
  * O preload é executado antes do initialize.
  * Este é o lugar para pré-carregar sprites e afins.
- * @param {function} fn 
+ * @param {function(IB2D):void} fn 
  */
 function Preload(fn){
     _preloadFunctions.push(fn)
@@ -56,55 +89,27 @@ function Preload(fn){
 
 const _preloadFunctions = []
 
-
 /**
  * Inicializa a engine. game deve implementar a interface iapp.
  * @param {IApp} game 
+ * @param {IB2D} b2d
  */
 
-async function Start(game){
+async function Start(game, b2d){
+    
     for(let fn of _preloadFunctions){
-        console.log("preload...")
-        await fn()
+        await fn(b2d)
     }
 
-    game.setup()
+    game.setup(b2d)
 
     function draw(){
-
-        BeginDraw()
-        game.draw()
-        EndDraw()
-
+        game.draw(b2d)        
         requestAnimationFrame(draw)
     }
 
     draw()
 }
-
-
-
-
-
-
-
-/**
- * Desenha texto na posição xy
- * @param {string} txt 
- * @param {number} x 
- * @param {number} y 
- */
-function DrawText(txt, x, y){
-    ////@ts-expect-error
-    // text(txt, x, y)
-}
-
-
-
-
-  
-
-
 
 const PI_BY_180 = (Math.PI / 180)
 
@@ -123,6 +128,11 @@ function Cos(a){
 }
 
 
+export { 
+    IB2D,   // interface de renderizador
+    IImage, // imagem
+    IApp    // de joguinho
+};
 
 export {
     // core
@@ -135,21 +145,4 @@ export {
     // ciclo de vida
     Start,
     Preload,
-
-    // Sistema , eu acho
-    Graphics,
-
-    Cls,
-
-    // imagens
-    LoadImage,
-    DrawImage,
-
-    // texto
-    DrawText,
-
-
-    // input
-    MouseX,
-    MouseY
 }

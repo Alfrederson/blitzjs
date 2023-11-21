@@ -1,24 +1,33 @@
 
 import {
-  Graphics,
-  DrawImage,
-  Start,
-} from "./blitz/blitz.js"
-import { AttachInput, MouseX, MouseY } from "./blitz/input.js"
+  WGL_B2D
+} from "./blitz/webgl.js"
 
-import GameState from "./game_state"
+import {
+  Start,
+  IB2D
+} from "./blitz/blitz.js"
+import { 
+  AttachInput, 
+  MouseX, 
+  MouseY 
+} from "./blitz/input.js"
+
+import {GameState} from "./game_state"
 
 class PigGame {
   gameState = new GameState()
 
-  setup(){
-    Graphics(800,600,"game")
+  /** @param {IB2D} b */
+  setup(b){
+    b.Graphics(800,600,"game")
     AttachInput(800,600,"game")
   }
-
-  draw(){
+  
+  /** @param {IB2D} b */
+  draw(b){
     this.gameState.update()
-    this.gameState.render()
+    this.gameState.render(b)
 
     // @ts-ignore
     document.getElementById("debug").innerText = `${MouseX()} ${MouseY()}`
@@ -26,4 +35,4 @@ class PigGame {
 
 }
 
-Start( new PigGame() )
+Start( new PigGame(), new WGL_B2D() )
