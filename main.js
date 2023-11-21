@@ -5,7 +5,8 @@ import {
 
 import {
   Start,
-  IB2D
+  IB2D,
+  IApp,
 } from "./blitz/blitz.js"
 import { 
   AttachInput, 
@@ -15,6 +16,7 @@ import {
 
 import {GameState} from "./game_state"
 
+/** @implements {IApp} */
 class PigGame {
   gameState = new GameState()
 
@@ -23,7 +25,7 @@ class PigGame {
     b.Graphics(800,600,"game")
     AttachInput(800,600,"game")
   }
-  
+
   /** @param {IB2D} b */
   draw(b){
     this.gameState.update()
