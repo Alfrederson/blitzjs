@@ -94,7 +94,7 @@ class GameState {
     }
 
     render() {
-        Cls()
+        Cls(0,0,0)
 
         DrawText("Scene stack top:" + this._scene.top, 20, 20)
         DrawText("Alives stack top:" + this._alives.top, 20, 40)

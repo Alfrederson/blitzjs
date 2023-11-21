@@ -1,6 +1,17 @@
-// @ts-ignore
-import { sketch } from "p5js-wrapper"
+import {
+    BeginDraw,
+    Cls,
+    DrawImage,
+    EndDraw,
+    Graphics,
+    LoadImage
+} from "./webgl"
 
+import {
+    AttachInput,
+    MouseX,
+    MouseY
+} from "./input"
 
 /**
  * Inicializa um "objeto" com propriedades específicas.
@@ -23,139 +34,15 @@ function make(x, properties){
 }
 
 
-let _canvas
-const _window = {
-    width : 0,
-    height : 0,
-
-    mouseX : 0,
-    mouseY : 0
-}
 
 
-function MouseX(){
-    return _window.mouseX
-}
 
-function MouseY(){
-    return _window.mouseY
-}
-
-/**
- * 
- * @param {number} width 
- * @param {number} height 
- * @param {string} elementId
- */
-// @ts-ignore
-function Graphics(width, height, elementId){
-
-    /** @type {HTMLCanvasElement | null} */
-    // @ts-expect-error
-    const element = document.getElementById(elementId);
-
-    if(!element){
-        throw "Não achei o elemento."
-    }
-
-    let refit_timer
-
-    function refit(){
-        _window.width = window.innerWidth-8
-        _window.height = window.innerHeight-8
-
-        // @ts-ignore
-        resizeCanvas( _window.width, _window.height )
-    }
-
-    window.addEventListener("resize", ()=>{
-        clearTimeout(refit_timer)
-        refit_timer = setTimeout( refit, 100 )
-    })
-
-    window.addEventListener("mousemove", ev =>{
-        _window.mouseX = ev.clientX
-        _window.mouseY = ev.clientY
-    })
-
-    // @ts-ignore
-    _canvas = createCanvas(window.innerWidth -8,window.innerHeight -8, WEBGL, element)
-
-    refit()
-}
 
 /** @interface */
 class IApp {
     setup(){}
     draw(){}
 }
-
-/**
- * Inicializa a engine. game deve implementar a interface iapp.
- * @param {IApp} game 
- */
-
-function Start(game){
-    //@ts-expect-error
-    sketch.setup = function(){
-        game.setup()
-    }
-
-    //@ts-expect-error
-    sketch.draw = function(){
-        game.draw()
-    }
-}
-
-
-
-const _imageMap = new Map()
-/**
- * Carrega uma imagem.
- * @param {string} path 
- * @returns 
- */
-function LoadImage(path){
-    let img = _imageMap.get(path)
-
-    if(!img){
-        //@ts-expect-error
-        img = loadImage(path)
-        _imageMap.set(path, img)
-    }
-
-    return img
-}
-
-
-function Cls(){
-    // @ts-ignore
-    _canvas.clear()
-}
-
-/**
- * Desenha uma imagem.
- * @param {object | undefined} img 
- * @param {number} x 
- * @param {number} y 
- */
-function DrawImage(img, x, y){
-    //@ts-expect-error
-    img && image(img, x - _window.width/2, y - _window.height/2 )
-}
-
-
-/**
- * Desenha texto na posição xy
- * @param {string} txt 
- * @param {number} x 
- * @param {number} y 
- */
-function DrawText(txt, x, y){
-    ////@ts-expect-error
-    // text(txt, x, y)
-}
-
 
 /**
  * Registra uma função para ser executada no preload.
@@ -170,14 +57,51 @@ function Preload(fn){
 const _preloadFunctions = []
 
 
+/**
+ * Inicializa a engine. game deve implementar a interface iapp.
+ * @param {IApp} game 
+ */
 
-//@ts-expect-error
-sketch.preload = function(){
-    console.log("====preload====")
+async function Start(game){
     for(let fn of _preloadFunctions){
-        fn()
+        console.log("preload...")
+        await fn()
     }
+
+    game.setup()
+
+    function draw(){
+
+        BeginDraw()
+        game.draw()
+        EndDraw()
+
+        requestAnimationFrame(draw)
+    }
+
+    draw()
 }
+
+
+
+
+
+
+
+/**
+ * Desenha texto na posição xy
+ * @param {string} txt 
+ * @param {number} x 
+ * @param {number} y 
+ */
+function DrawText(txt, x, y){
+    ////@ts-expect-error
+    // text(txt, x, y)
+}
+
+
+
+
   
 
 

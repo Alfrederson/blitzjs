@@ -44,7 +44,7 @@ class Pig {
           this.shootingFrom = 1 - this.shootingFrom
 
           state.spawn( make(new Missil(), {
-            x : this.x -  16 + this.shootingFrom*32,
+            x : this.x  -16 + this.shootingFrom*32,
             y : this.y,
             sy : this.sy+4
           }))
@@ -63,7 +63,7 @@ class Pig {
     }
 
     render(){
-      DrawImage( sprite, this.x-64, this.y-64 )
+      DrawImage( sprite, this.x, this.y )
     }
 
     initialize(){
