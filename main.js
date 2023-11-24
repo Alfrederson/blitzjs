@@ -20,14 +20,18 @@ import {GameState} from "./game_state"
 class PigGame {
   gameState = new GameState()
 
+  angulo = 0
+
   /** @param {IB2D} b */
   setup(b){
-    b.Graphics(800,600,"game")
-    AttachInput(800,600,"game")
+    b.Graphics(600,800,"game")
+    AttachInput(600,800,"game")
   }
 
   /** @param {IB2D} b */
   draw(b){
+    this.angulo += 0.01
+    b.SetAngle(this.angulo)
     this.gameState.update()
     this.gameState.render(b)
 

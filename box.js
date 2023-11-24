@@ -22,6 +22,8 @@ class Pig {
     shootingFrom = 0
     angle = 0
 
+    kamikaze=false
+
     /** @param {GameState} state */
     update(state){
       if(this.x >= 800-32){
@@ -40,7 +42,12 @@ class Pig {
 
       this.angle += 12 
 
-      if(this.shooting){
+      if(this.kamikaze){
+        if(this.sy <= 32)
+          this.sy += 0.5
+      }
+
+      if(this.shooting && !this.kamikaze){
         if(++this.ticker >= 3){
           this.shootingFrom = 1 - this.shootingFrom
 
@@ -51,12 +58,16 @@ class Pig {
           }))
   
           this.ticker = 0
+
         }  
       }
 
       if(++this.burstTicker >= 20){
         this.shooting = !this.shooting
         this.burstTicker=0
+        if(Math.random()>=0.7){
+          this.kamikaze=true
+        }
       }
 
       this.x += this.sx

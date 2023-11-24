@@ -32,12 +32,19 @@ class IB2D{
         return new IImage()
     }
 
+
+
     /**
      * @param {IImage} imageHandler
      * @param {number} x
      * @param {number} y
      */
     DrawImage(imageHandler,x,y){}
+
+    /**
+     * @param {number} angle
+     */
+    SetAngle(angle){}
 }
 
 /** @interface */

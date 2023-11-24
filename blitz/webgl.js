@@ -138,6 +138,7 @@ class WGL_B2D {
     projectionMatrix = mat4.create()
 
     scale = [1,1]
+    rotation = 45
     drawColor = [1,1,1,1]
 
     /**
@@ -167,28 +168,31 @@ class WGL_B2D {
     Graphics(width,height, elementId){
         /** @type {HTMLCanvasElement | null} */
         // @ts-ignore
-        const element = document.getElementById(elementId);
+        const canvas = document.getElementById(elementId);
 
-        if(!element){
+        if(!canvas)
             throw "Não achei o elemento."
-        }
-        if(!(element instanceof HTMLCanvasElement)){
+        if(!(canvas instanceof HTMLCanvasElement))
             throw "Elemento não é um canvas."
+
+        const body= document.getElementsByTagName("body")[0]
+        // manter a proporção da tela
+        const letterBox = function(){
+            let innerRatio = width/height
+            let outerRatio = body.clientWidth / body.clientHeight    
+
+            if (outerRatio > innerRatio){
+                canvas.width = body.clientHeight * innerRatio
+                canvas.height = body.clientHeight;
+            }else{
+                canvas.width = body.clientWidth
+                canvas.height = body.clientWidth/innerRatio
+            }
         }
 
-        const b= document.getElementsByTagName("body")[0]
+        letterBox()
 
-        element.width=b.clientWidth-8
-        element.height=b.clientHeight-8
-
-        window.addEventListener("resize", ev =>{
-            const b= document.getElementsByTagName("body")[0]
-
-            element.width=b.clientWidth-8
-            element.height=b.clientHeight-8    
-        })
-
-        this.ctx = element.getContext("webgl");
+        this.ctx = canvas.getContext("webgl");
 
         if(!this.ctx)
             throw "Não consegui pegar um contexto de renderização."
@@ -229,6 +233,12 @@ class WGL_B2D {
             false, // transpose,
             this.projectionMatrix
         )
+
+        // ajusta o tamanho do canvas pra ficar  bunitim
+        window.addEventListener("resize", ()=>{
+            letterBox()
+            this.ctx?.viewport(0,0, this.ctx.canvas.width, this.ctx.canvas.height)
+        })
     }
     /**
      * 
@@ -241,6 +251,13 @@ class WGL_B2D {
         this.ctx?.clear(this.ctx.COLOR_BUFFER_BIT)            
     }
 
+
+    /**
+     * @param {number} angle
+     */
+    SetAngle(angle){
+        this.rotation = angle
+    }
 
     /**
      * @param {IImage} imageHandler
@@ -259,6 +276,11 @@ class WGL_B2D {
             modelViewMatrix,
             modelViewMatrix,
             [x,y,0]
+        )
+        mat4.rotateZ(
+            modelViewMatrix,
+            modelViewMatrix,
+            this.rotation
         )
         // escala pra deixar no tamanho da imagem...
         mat4.scale(
