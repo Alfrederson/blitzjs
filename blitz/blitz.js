@@ -2,14 +2,15 @@
 
 class IB2D{
     /**
+     * Inicia os gráficos.
      * @param {number} width 
      * @param {number} height 
-     * @param {string} elementId 
+     * @param {string} elementId é o id do elemento. função falha se não existir um canvas com esse id. 
      */
     Graphics(width,height,elementId){}
 
     /**
-     * 
+     * Limpa a tela com a cor especificada.
      * @param {number} r 
      * @param {number} g 
      * @param {number} b 
@@ -17,7 +18,7 @@ class IB2D{
     Cls(r,g,b){}
 
     /**
-     * 
+     * Escreve um texto na posição x,y.
      * @param {string} text 
      * @param {number} x 
      * @param {number} y 
@@ -25,6 +26,7 @@ class IB2D{
     DrawText(text,x,y){}
 
     /**
+     * Carrega uma imagem.
      * @param {string} fileName
      * @returns {IImage}
      */
@@ -32,9 +34,8 @@ class IB2D{
         return new IImage()
     }
 
-
-
     /**
+     * Desenha uma imagem.
      * @param {IImage} imageHandler
      * @param {number} x
      * @param {number} y
@@ -42,6 +43,7 @@ class IB2D{
     DrawImage(imageHandler,x,y){}
 
     /**
+     * Define o ângulo de rotação para os próximos desenhos.
      * @param {number} angle
      */
     SetAngle(angle){}
@@ -104,11 +106,12 @@ const _preloadFunctions = []
 
 async function Start(game, b2d){
     
+
+    game.setup(b2d)
+
     for(let fn of _preloadFunctions){
         await fn(b2d)
     }
-
-    game.setup(b2d)
 
     function draw(){
         game.draw(b2d)        

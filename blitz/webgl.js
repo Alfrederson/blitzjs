@@ -7,28 +7,38 @@ import { IB2D, IImage } from "./blitz"
  * @property {WebGLProgram} program - The WebGL program.
  * @property {Object} attribLocations - Attribute locations.
  * @property {number} attribLocations.vertexPosition - The location of the vertex position attribute.
+ * @property {number} attribLocations.textureCoord - The location of the texture position attribute.
  * @property {Object} uniformLocations - Uniform locations.
  * @property {WebGLUniformLocation | null} uniformLocations.projectionMatrix - The location of the projection matrix uniform.
  * @property {WebGLUniformLocation | null} uniformLocations.modelViewMatrix - The location of the model-view matrix uniform.
  * @property {WebGLUniformLocation | null} uniformLocations.drawColor - The location of the drawColor uniform.
+ * @property {WebGLUniformLocation | null} uniformLocations.uSampler - The location of the drawColor uniform.
+* 
 */
 
 
 
 const vsSource = `
     attribute vec4 aVertexPosition;
+    attribute vec2 aTextureCoord;
+
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
+
+    varying lowp vec2 vTextureCoord;
     void main(){
         gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+        vTextureCoord = aTextureCoord;
     }
 `
 
 // Talvez usar isso pra mudar a cor dos sprites
 const fsSource = `
+    varying lowp vec2 vTextureCoord;
+    uniform sampler2D uSampler;
     uniform lowp vec4 uDrawColor;
     void main(){
-        gl_FragColor = uDrawColor;
+        gl_FragColor = uDrawColor * texture2D(uSampler,vTextureCoord);
     }
 `
 
@@ -96,8 +106,8 @@ function initPositionBuffer(ctx){
     return positionBuffer
 }
 
+
 /**
- * 
  * @param {WebGLRenderingContext} ctx 
  * @param {*} buffers 
  * @param {WebGLProgramInfo} programInfo 
@@ -105,7 +115,7 @@ function initPositionBuffer(ctx){
 function setPositionAttribute(ctx, buffers, programInfo){
     ctx.bindBuffer(
         ctx.ARRAY_BUFFER,
-        buffers.position
+        buffers
     )
     ctx.vertexAttribPointer(
         programInfo.attribLocations.vertexPosition,
@@ -119,6 +129,40 @@ function setPositionAttribute(ctx, buffers, programInfo){
         programInfo.attribLocations.vertexPosition
     )
 }
+
+/**
+ * @param {WebGLRenderingContext} ctx 
+ * @param {*} buffers 
+ * @param {WebGLProgramInfo} programInfo 
+ */
+function setTextureCoordAttribute(ctx,buffers,programInfo){
+    console.log(programInfo)
+    ctx.bindBuffer( ctx.ARRAY_BUFFER,buffers )
+    const uv = [
+        1,1,
+        0,1,
+        1,0,
+        0,0
+    ]
+    ctx.bufferData(
+        ctx.ARRAY_BUFFER,
+        new Float32Array(uv),
+        ctx.STATIC_DRAW
+    )
+    ctx.vertexAttribPointer(
+        programInfo.attribLocations.textureCoord,
+        2,
+        ctx.FLOAT,
+        false,
+        0,
+        0
+    )
+    ctx.enableVertexAttribArray( 
+        programInfo.attribLocations.textureCoord
+    )
+
+}
+
 
 /** @implements {IB2D} */
 class WGL_B2D {
@@ -134,11 +178,14 @@ class WGL_B2D {
     /** @type {WebGLBuffer|null} */
     positionBuffer = null
 
+    /** @type {WebGLBuffer|null} */
+    textureCoordinateBuffer = null
+
     /** @type {mat4} */
     projectionMatrix = mat4.create()
 
     scale = [1,1]
-    rotation = 45
+    rotation = 0
     drawColor = [1,1,1,1]
 
     /**
@@ -146,24 +193,43 @@ class WGL_B2D {
      * @param {string} imageName 
      */
     LoadImage(imageName){
-        console.log("Loading ",imageName)
-        return {
-            width : 32,
-            height : 32,
-            frameCount : 1
+        if(!this.ctx){
+            throw "Não tem contexto do webgl"
         }
+        const ctx = this.ctx
+        const texture = ctx.createTexture()
+        // aspecto pixelado
+
+        const result = {
+            width : 32,
+            height: 32,
+            frameCount : 1,
+            texture
+        }
+
+        const image = new Image()
+        image.onload = function(){
+            console.log(image.width)
+            result.width = image.width
+            result.height = image.height
+            ctx.bindTexture(ctx.TEXTURE_2D,texture)
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.NEAREST)
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST)    
+            ctx.texImage2D(ctx.TEXTURE_2D,0,ctx.RGBA,ctx.RGBA,ctx.UNSIGNED_BYTE,image)
+        }
+        image.src = imageName
+
+        return result
     }
 
     LoadAnimImage(imageName,frameWidth, frameHeight, firstFrame,frameCount){
 
     }
-
-
     /**
-     * 
+     * Inicia os gráficos.
      * @param {number} width 
      * @param {number} height 
-     * @param {string} elementId 
+     * @param {string} elementId é o id do elemento. função falha se não existir um canvas com esse id. 
      */
     Graphics(width,height, elementId){
         /** @type {HTMLCanvasElement | null} */
@@ -198,32 +264,43 @@ class WGL_B2D {
             throw "Não consegui pegar um contexto de renderização."
         // iniciar os shadeus lá
         this.shaderProgram = initShaderProgram(this.ctx, vsSource, fsSource)
+        const {ctx,shaderProgram} = this
+
+        function ul(u){ return ctx.getUniformLocation( shaderProgram, u) }
+        function al(a){ return ctx.getAttribLocation( shaderProgram, a) }
 
         this.programInfo = {
             program : this.shaderProgram,
             attribLocations :{
-                vertexPosition: this.ctx.getAttribLocation(this.shaderProgram,"aVertexPosition")
+                vertexPosition: al("aVertexPosition"),
+                textureCoord: al("aTextureCoord")
             },
             uniformLocations: {
-                projectionMatrix: this.ctx.getUniformLocation(this.shaderProgram,"uProjectionMatrix"),
-                modelViewMatrix: this.ctx.getUniformLocation(this.shaderProgram,"uModelViewMatrix"),
-                drawColor : this.ctx.getUniformLocation(this.shaderProgram,"uDrawColor")
+                projectionMatrix: ul("uProjectionMatrix"),
+                modelViewMatrix: ul("uModelViewMatrix"),
+                uSampler : ul("uSampler"),
+                drawColor : ul("uDrawColor")
             }
         }
 
-        this.positionBuffer = {
-            position : initPositionBuffer(this.ctx)
-        }
-
-        this.projectionMatrix = mat4.create()
-        mat4.ortho(this.projectionMatrix,0,width,height,0,-1,1)    
-
+        this.positionBuffer = initPositionBuffer(this.ctx)
         // faz isso uma vez só....
         setPositionAttribute(
             this.ctx,
             this.positionBuffer,
             this.programInfo
         )
+
+        this.textureCoordinateBuffer = this.ctx.createBuffer()
+        setTextureCoordAttribute(
+            this.ctx,
+            this.textureCoordinateBuffer,
+            this.programInfo
+        )
+
+        this.projectionMatrix = mat4.create()
+        mat4.ortho(this.projectionMatrix,0,width,height,0,-1,1)    
+
 
         this.ctx.useProgram( this.programInfo.program )
         
@@ -234,6 +311,11 @@ class WGL_B2D {
             this.projectionMatrix
         )
 
+        // alpha blend
+
+        ctx.enable(ctx.BLEND);
+        ctx.blendFunc(ctx.SRC_ALPHA, ctx.ONE_MINUS_SRC_ALPHA);
+
         // ajusta o tamanho do canvas pra ficar  bunitim
         window.addEventListener("resize", ()=>{
             letterBox()
@@ -241,7 +323,7 @@ class WGL_B2D {
         })
     }
     /**
-     * 
+     * Limpa a tela com a cor especificada.
      * @param {number} r 
      * @param {number} g 
      * @param {number} b 
@@ -251,8 +333,8 @@ class WGL_B2D {
         this.ctx?.clear(this.ctx.COLOR_BUFFER_BIT)            
     }
 
-
     /**
+     * Define o ângulo com o qual as próximas operações de desenho serão chamadas.
      * @param {number} angle
      */
     SetAngle(angle){
@@ -265,9 +347,11 @@ class WGL_B2D {
      * @param {number} y
      */
     DrawImage(imageHandler, x, y){
-        if(!this.ctx)
+        let {ctx, programInfo} = this
+
+        if(!ctx)
             throw "sem contexto"
-        if(!this.programInfo)
+        if(!programInfo)
             throw "sem program info"
     
         const modelViewMatrix = mat4.create()
@@ -288,21 +372,26 @@ class WGL_B2D {
             modelViewMatrix,
             [imageHandler.width,imageHandler.height,1]
         )
+
+        ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)
+
         // escala e posiciona o quadradinho
-        this.ctx.uniformMatrix4fv(
-            this.programInfo.uniformLocations.modelViewMatrix,
+        ctx.uniformMatrix4fv(
+            programInfo.uniformLocations.modelViewMatrix,
             false, // transpose
             modelViewMatrix
         )
         // WEBGL É CHATO DEMAIS
         // cor
-        this.ctx.uniform4fv(
-            this.programInfo.uniformLocations.drawColor,
+        ctx.uniform4fv(
+            programInfo.uniformLocations.drawColor,
             this.drawColor
         )
+
+        ctx.uniform1i(programInfo.uniformLocations.uSampler,0)
     
-        this.ctx.drawArrays(
-            this.ctx.TRIANGLE_STRIP,
+        ctx.drawArrays(
+            ctx.TRIANGLE_STRIP,
             0, // offset
             4  // vertexCount
         )

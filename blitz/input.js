@@ -6,7 +6,7 @@ const input = {
 /**
  * Ativa input no elemento especificado.
  * width e height são as dimensões "virtuais" da tela,
- * ex: 320 x 240 em um elemento que vai aparecer como 800 x 600.
+ * de tal forma que a posição real seja corrigida para corresponder a uma posição na tela virtual.
  * @param {number} width
  * @param {number} height
  * @param {string} canvasElementId  

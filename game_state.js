@@ -16,11 +16,6 @@ import Stack from "./stack.js"
 
 
 
-let cursor
-
-Preload(b =>{
-    cursor = b.LoadImage("cursor.png")
-})
 
 
 const MAX_THINGS = 500
@@ -95,7 +90,7 @@ class GameState {
      * @param {IB2D} b 
      */
     render(b) {
-        b.Cls(0,0,0)
+        b.Cls(255,255,255)
 
         b.DrawText("Scene stack top:" + this._scene.top, 20, 20)
         b.DrawText("Alives stack top:" + this._alives.top, 20, 40)
@@ -104,9 +99,6 @@ class GameState {
             let obj = this._scene.at(i)
             obj.render && obj.render(b)
         }
-
-        b.DrawImage( cursor, MouseX(), MouseY() )
-
     }
 }
 

@@ -1,4 +1,3 @@
-
 import {
   WGL_B2D
 } from "./blitz/webgl.js"
@@ -7,7 +6,9 @@ import {
   Start,
   IB2D,
   IApp,
+  Preload
 } from "./blitz/blitz.js"
+
 import { 
   AttachInput, 
   MouseX, 
@@ -15,6 +16,12 @@ import {
 } from "./blitz/input.js"
 
 import {GameState} from "./game_state"
+
+let cursor
+
+Preload(b =>{
+    cursor = b.LoadImage("cursor.png")
+})
 
 /** @implements {IApp} */
 class PigGame {
@@ -30,15 +37,13 @@ class PigGame {
 
   /** @param {IB2D} b */
   draw(b){
-    this.angulo += 0.01
-    b.SetAngle(this.angulo)
+
     this.gameState.update()
     this.gameState.render(b)
 
-    // @ts-ignore
-    document.getElementById("debug").innerText = `${MouseX()} ${MouseY()}`
+    b.DrawImage( cursor, MouseX(), MouseY() )
   }
 
 }
 
-Start( new PigGame(), new WGL_B2D() )
+Start(new PigGame(), new WGL_B2D() )
