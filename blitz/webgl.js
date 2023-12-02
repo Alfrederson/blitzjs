@@ -1,6 +1,11 @@
 import { mat4 } from "gl-matrix"
 import { IB2D, IImage } from "./blitz"
 
+import { vsSource, fsSource, initShaderProgram, loadShader } from "./webgl/shader"
+
+import * as image from "./webgl/image"
+import * as draw from "./webgl/draw"
+
 /**
  * WebGL program with attribute and uniform locations.
  * @typedef {Object} WebGLProgramInfo
@@ -16,81 +21,7 @@ import { IB2D, IImage } from "./blitz"
 * 
 */
 
-
-
-const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec2 aTextureCoord;
-
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-
-    varying lowp vec2 vTextureCoord;
-    void main(){
-        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-        vTextureCoord = aTextureCoord;
-    }
-`
-
-// Talvez usar isso pra mudar a cor dos sprites
-const fsSource = `
-    varying lowp vec2 vTextureCoord;
-    uniform sampler2D uSampler;
-    uniform lowp vec4 uDrawColor;
-    void main(){
-        gl_FragColor = uDrawColor * texture2D(uSampler,vTextureCoord);
-    }
-`
-
 /**
- * Carrega um shader a partir de uma string.
- * @param {WebGLRenderingContext} ctx
- * @param {number} type
- * @param {string} source
- */
-function loadShader(ctx, type, source){
-    const shader = ctx.createShader(type)
-    if(!shader)
-        throw "Não consegui criar o shader"
-    ctx.shaderSource(shader,source)
-    ctx.compileShader(shader)
-    if(!ctx.getShaderParameter(shader,ctx.COMPILE_STATUS)){
-        let msg = "Erro compilando o shader: " + ctx.getShaderInfoLog(shader)
-        ctx.deleteShader(shader)
-        throw msg
-    }
-    return shader
-}
-
-/**
- * @param {WebGLRenderingContext} ctx
- * @param {string} vsSource
- * @param {string} fsSource
- */
-function initShaderProgram(ctx,vsSource,fsSource){
-    let shaderProgram = ctx.createProgram()
-    if(!shaderProgram)
-        throw "Não consegui criar um shader program"
-
-    const vs = loadShader(ctx,ctx.VERTEX_SHADER,vsSource)
-    const fs = loadShader(ctx,ctx.FRAGMENT_SHADER,fsSource)
-
-    ctx.attachShader(shaderProgram,vs)
-    ctx.attachShader(shaderProgram,fs)
-    ctx.linkProgram(shaderProgram)
-
-    if(!ctx.getProgramParameter(
-        shaderProgram,
-        ctx.LINK_STATUS
-    )){
-        throw `Não consegui inicializar o shader program: ${ctx.getProgramInfoLog(shaderProgram)}`
-    }
-
-    return shaderProgram
-}
-
-/**
- * 
  * @param {WebGLRenderingContext} ctx 
  */
 function initPositionBuffer(ctx){
@@ -105,7 +36,6 @@ function initPositionBuffer(ctx){
     ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(positions),ctx.STATIC_DRAW)
     return positionBuffer
 }
-
 
 /**
  * @param {WebGLRenderingContext} ctx 
@@ -134,16 +64,10 @@ function setPositionAttribute(ctx, buffers, programInfo){
  * @param {WebGLRenderingContext} ctx 
  * @param {*} buffers 
  * @param {WebGLProgramInfo} programInfo 
+ * @param {number[]} uv
  */
-function setTextureCoordAttribute(ctx,buffers,programInfo){
-    console.log(programInfo)
+function setTextureCoordAttribute(ctx,buffers,programInfo,uv){
     ctx.bindBuffer( ctx.ARRAY_BUFFER,buffers )
-    const uv = [
-        1,1,
-        0,1,
-        1,0,
-        0,0
-    ]
     ctx.bufferData(
         ctx.ARRAY_BUFFER,
         new Float32Array(uv),
@@ -160,20 +84,21 @@ function setTextureCoordAttribute(ctx,buffers,programInfo){
     ctx.enableVertexAttribArray( 
         programInfo.attribLocations.textureCoord
     )
-
 }
-
 
 /** @implements {IB2D} */
 class WGL_B2D {
-    /** @type {WebGLRenderingContext|null} */
-    ctx = null
+    /** @type {boolean} */
+    initialized = false
+
+    /** @type {WebGLRenderingContext} */
+    ctx
 
     /** @type {WebGLProgram|null} */
     shaderProgram = null
 
-    /** @type {WebGLProgramInfo|null} */
-    programInfo = null
+    /** @type {WebGLProgramInfo} */
+    programInfo
 
     /** @type {WebGLBuffer|null} */
     positionBuffer = null
@@ -192,38 +117,12 @@ class WGL_B2D {
      * Carrega uma imagem.
      * @param {string} imageName 
      */
-    LoadImage(imageName){
-        if(!this.ctx){
-            throw "Não tem contexto do webgl"
-        }
-        const ctx = this.ctx
-        const texture = ctx.createTexture()
-        // aspecto pixelado
-
-        const result = {
-            width : 32,
-            height: 32,
-            frameCount : 1,
-            texture
-        }
-
-        const image = new Image()
-        image.onload = function(){
-            console.log(image.width)
-            result.width = image.width
-            result.height = image.height
-            ctx.bindTexture(ctx.TEXTURE_2D,texture)
-            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.NEAREST)
-            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST)    
-            ctx.texImage2D(ctx.TEXTURE_2D,0,ctx.RGBA,ctx.RGBA,ctx.UNSIGNED_BYTE,image)
-        }
-        image.src = imageName
-
-        return result
+    async LoadImage(imageName){
+        return image.loadImage( this.ctx, imageName,0,0 )
     }
 
-    LoadAnimImage(imageName,frameWidth, frameHeight, firstFrame,frameCount){
-
+    async LoadAnimImage(imageName,frameWidth, frameHeight){
+        return image.loadImage( this.ctx, imageName,frameWidth,frameHeight )
     }
     /**
      * Inicia os gráficos.
@@ -258,10 +157,12 @@ class WGL_B2D {
 
         letterBox()
 
-        this.ctx = canvas.getContext("webgl");
-
-        if(!this.ctx)
+        let _webgl = canvas.getContext("webgl")
+        if(!_webgl)
             throw "Não consegui pegar um contexto de renderização."
+
+        this.ctx = _webgl;
+
         // iniciar os shadeus lá
         this.shaderProgram = initShaderProgram(this.ctx, vsSource, fsSource)
         const {ctx,shaderProgram} = this
@@ -295,12 +196,16 @@ class WGL_B2D {
         setTextureCoordAttribute(
             this.ctx,
             this.textureCoordinateBuffer,
-            this.programInfo
+            this.programInfo,[
+                1,1,
+                0,1,
+                1,0,
+                0,0
+            ]            
         )
 
         this.projectionMatrix = mat4.create()
         mat4.ortho(this.projectionMatrix,0,width,height,0,-1,1)    
-
 
         this.ctx.useProgram( this.programInfo.program )
         
@@ -321,6 +226,8 @@ class WGL_B2D {
             letterBox()
             this.ctx?.viewport(0,0, this.ctx.canvas.width, this.ctx.canvas.height)
         })
+
+        this.initialized=true
     }
     /**
      * Limpa a tela com a cor especificada.
@@ -329,8 +236,7 @@ class WGL_B2D {
      * @param {number} b 
      */
     Cls(r,g,b){
-        this.ctx?.clearColor(r/255,g/255,b/255,1.0)
-        this.ctx?.clear(this.ctx.COLOR_BUFFER_BIT)            
+        draw.cls( this.ctx, r,g,b )
     }
 
     /**
@@ -342,58 +248,65 @@ class WGL_B2D {
     }
 
     /**
-     * @param {IImage} imageHandler
+     * @param {image.IWGLImage} imageHandler
      * @param {number} x
      * @param {number} y
      */
     DrawImage(imageHandler, x, y){
-        let {ctx, programInfo} = this
+        if(!this.initialized)
+            throw "contexto não inicializado"
+        
+        setTextureCoordAttribute(
+             this.ctx,
+             this.textureCoordinateBuffer,
+             this.programInfo,[
+                 1,1,
+                 0,1,
+                 1,0,
+                 0,0
+             ]            
+         )
 
-        if(!ctx)
-            throw "sem contexto"
-        if(!programInfo)
-            throw "sem program info"
-    
-        const modelViewMatrix = mat4.create()
-        // cria uma matriz de translação
-        mat4.translate(
-            modelViewMatrix,
-            modelViewMatrix,
-            [x,y,0]
+        image.drawImage(
+            this.ctx,
+            imageHandler,
+            this.programInfo,
+            this.drawColor,
+            this.rotation,
+            x,
+            y
         )
-        mat4.rotateZ(
-            modelViewMatrix,
-            modelViewMatrix,
-            this.rotation
-        )
-        // escala pra deixar no tamanho da imagem...
-        mat4.scale(
-            modelViewMatrix,
-            modelViewMatrix,
-            [imageHandler.width,imageHandler.height,1]
-        )
+    }
 
-        ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)
+    DrawImageFrame(imageHandler, x, y, frame){
+        if(!this.initialized)
+            throw "contexto não inicializado"
 
-        // escala e posiciona o quadradinho
-        ctx.uniformMatrix4fv(
-            programInfo.uniformLocations.modelViewMatrix,
-            false, // transpose
-            modelViewMatrix
-        )
-        // WEBGL É CHATO DEMAIS
-        // cor
-        ctx.uniform4fv(
-            programInfo.uniformLocations.drawColor,
-            this.drawColor
-        )
+        let pos = frame / imageHandler.frameCount
 
-        ctx.uniform1i(programInfo.uniformLocations.uSampler,0)
-    
-        ctx.drawArrays(
-            ctx.TRIANGLE_STRIP,
-            0, // offset
-            4  // vertexCount
+        let u0 = pos
+        let v0 = 0
+        let u1 = pos + (1/imageHandler.frameCount) 
+        let v1 = 1
+
+        setTextureCoordAttribute(
+            this.ctx,
+            this.textureCoordinateBuffer,
+            this.programInfo,[
+                u0,v0,
+                u0,v1,
+                u1,v0,
+                u1,u1
+            ]            
+        )
+        image.drawImage(
+            this.ctx,
+            imageHandler,
+            this.programInfo,
+            this.drawColor,
+            this.rotation,
+            x,
+            y
         )
     }
     

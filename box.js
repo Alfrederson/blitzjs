@@ -5,8 +5,9 @@ import Missil from "./missil"
 
 let sprite
 
-Preload( b =>{
-  sprite = b.LoadImage("porco.png")
+Preload( async b =>{
+  sprite = await b.LoadImage("porco.png")
+  sprite = await b.LoadImage("porco.png")
 })
 
 /** @implements {IGameThing} */

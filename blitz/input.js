@@ -1,6 +1,9 @@
 const input = {
+    oldMouseX : 0,
+    oldMouseY : 0,
     mouseX : 0,
-    mouseY : 0
+    mouseY : 0,
+    mouseDown : Array.from({length:10}, x => false)
 }
 
 /**
@@ -18,10 +21,24 @@ function AttachInput(width, height, canvasElementId){
     }
 
     canvasElement.addEventListener("mousemove", ev =>{
+        input.oldMouseX = input.mouseX
+        input.oldMouseY = input.mouseY
+
         const rect = canvasElement.getBoundingClientRect()
+
         input.mouseX = (ev.clientX - rect.left)/(rect.width)*width | 0
         input.mouseY = (ev.clientY - rect.top)/(rect.height)*height | 0
     })
+
+    canvasElement.addEventListener("mousedown", ev =>{
+        ev.preventDefault()
+        input.mouseDown[ ev.button ] = true
+    })
+    canvasElement.addEventListener("mouseup", ev =>{
+        ev.preventDefault()
+        input.mouseDown[ ev.button ] = false
+    })
+
 }
 
 function MouseX(){
@@ -32,8 +49,23 @@ function MouseY(){
     return input.mouseY
 }
 
+function MouseSpeedX(){
+    return input.mouseX - input.oldMouseX
+}
+
+function MouseSpeedY(){
+    return input.mouseY - input.oldMouseY
+}
+
+function MouseDown(mb){
+    return input.mouseDown[mb]
+}
+
 export {
     AttachInput,
     MouseX,
-    MouseY
+    MouseY,
+    MouseSpeedX,
+    MouseSpeedY,
+    MouseDown
 }

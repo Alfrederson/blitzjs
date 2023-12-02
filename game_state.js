@@ -14,10 +14,6 @@ import {
 import Pig from "./box.js"
 import Stack from "./stack.js"
 
-
-
-
-
 const MAX_THINGS = 500
 
 /** @interface  */

@@ -28,11 +28,24 @@ class IB2D{
     /**
      * Carrega uma imagem.
      * @param {string} fileName
-     * @returns {IImage}
+     * @returns {Promise<IImage>}
      */
-    LoadImage(fileName){
+    async LoadImage(fileName){
         return new IImage()
     }
+
+    /**
+     * Carrega uma imagem com tiles.
+     * @param {string} fileName
+     * @param {number} frameWidth
+     * @param {number} frameHeight
+     * @returns {Promise<IImage>}
+     */
+    async LoadAnimImage(fileName, frameWidth, frameHeight){
+        return new IImage()
+    }
+    
+
 
     /**
      * Desenha uma imagem.
@@ -43,6 +56,15 @@ class IB2D{
     DrawImage(imageHandler,x,y){}
 
     /**
+     * Desenha um frame de uma imagem.
+     * @param {IImage} imageHandler
+     * @param {number} x
+     * @param {number} y
+     * @param {number} frame
+     */
+    DrawImageFrame(imageHandler,x,y,frame){}
+
+    /**
      * Define o ângulo de rotação para os próximos desenhos.
      * @param {number} angle
      */
@@ -51,12 +73,11 @@ class IB2D{
 
 /** @interface */
 class IImage {
-    /** @type {number} */
-    width
-    /** @type {number} */
-    height
-    /** @type {number} */
-    frameCount
+    width = 0
+    height = 0
+    frameWidth = 0
+    frameHeight = 0
+    frameCount = 0
 }
 
 
@@ -74,7 +95,6 @@ function make(x, properties){
             x[k] = properties[k]
         }
     }
-
     return x
 }
 
@@ -106,17 +126,14 @@ const _preloadFunctions = []
 
 async function Start(game, b2d){
     
-
-    game.setup(b2d)
-
-    for(let fn of _preloadFunctions){
-        await fn(b2d)
-    }
-
     function draw(){
         game.draw(b2d)        
         requestAnimationFrame(draw)
     }
+
+    game.setup(b2d)
+
+    for(let fn of _preloadFunctions) await fn(b2d)
 
     draw()
 }

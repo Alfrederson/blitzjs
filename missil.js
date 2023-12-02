@@ -10,8 +10,8 @@ import {
 
 let sprite
 
-Preload(b => {
-  sprite = b.LoadImage("missil.png")
+Preload(async b => {
+  sprite = await b.LoadImage("missil.png")
 })
 
 /** @implements {IGameThing} */
