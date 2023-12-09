@@ -17,7 +17,7 @@ import {
 
 import {GameState} from "./game_state"
 
-import Tiles from "./tiles"
+import { Gato } from "./game/gato.js"
 
 let cursor
 
@@ -26,31 +26,31 @@ Preload(async b =>{
 })
 
 /** @implements {IApp} */
-class PigGame {
+class CatGame {
   gameState = new GameState()
-
-  coisa = new Tiles()
-
-  angulo = 0
 
   /** @param {IB2D} b */
   setup(b){
-    b.Graphics(600,800,"game")
-    AttachInput(600,800,"game")
+
+    this.gameState.screen = {
+      width : 1066,
+      height : 600
+    }
+
+    const {width,height} = this.gameState.screen 
+
+    b.Graphics(width,height,"game")
+    AttachInput(width,height,"game")
+
+    this.gameState.spawn( new Gato() )
   }
 
   /** @param {IB2D} b */
   draw(b){
-    this.coisa.update(this.gameState)
-
     this.gameState.update()
     this.gameState.render(b)
-
-    this.coisa.render(b)
-
-    b.DrawImage( cursor, MouseX()+16, MouseY()+16 )
   }
 
 }
 
-Start(new PigGame(), new WGL_B2D() )
+Start(new CatGame(), new WGL_B2D() )

@@ -1,5 +1,5 @@
 import { IB2D, Preload } from "./blitz/blitz";
-import { GameState, IGameThing } from "./game_state";
+import { GameState } from "./game_state";
 
 import { MouseX, MouseY, MouseDown, MouseSpeedX, MouseSpeedY } from "./blitz/input";
 
@@ -8,9 +8,6 @@ Preload( async b =>{
     sprite = await b.LoadAnimImage("tiles.png",32,32)
 })
 
-/**
- * @implements {IGameThing}
- */
 class Tiles {
     dead = false
     lit = 0
