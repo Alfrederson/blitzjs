@@ -18,7 +18,7 @@ class Tiles {
 
     sx = 0
     sy = 0
-    x = 16
+    x = 300
     y = 16
 
     holding = false
