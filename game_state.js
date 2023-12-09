@@ -11,22 +11,38 @@ import {
     MouseY
 } from "./blitz/input.js"
 
-import Pig from "./box.js"
 import Stack from "./stack.js"
 
 const MAX_THINGS = 500
 
-/** @interface  */
-class IGameThing {
-    /** @type {boolean} */
-    dead
-    /** @param {GameState} gamestate */
-    update(gamestate) { }
-    /** @param {IB2D} b2d */
-    render(b2d) { }
-}
+/**
+ * @typedef {Object} IGameThing
+ * @property {boolean} dead - se for verdadeiro, vai remover o objeto.
+ * @property {function} update - Atualiza.
+ * @property {function} [render] - Renderiza.
+ * @param {function} [renderUi] - Se ele desenha coisa na UI.
+ */
+
+// /** @interface  */
+// class IGameThing {
+//     /** @type {boolean} */
+//     dead
+//     /** @param {GameState} gamestate */
+//     update(gamestate) { }
+//     /** @param {IB2D} b2d */
+//     render(b2d) { }
+
+//     /** @param {IB2D} b2d */
+//     renderUi(b2d){ }
+// }
 
 class GameState {
+
+    screen = {
+        width : 0,
+        height : 0
+    }
+
     /** @type {Stack} */
     _scene = new Stack(MAX_THINGS)
 
@@ -62,19 +78,6 @@ class GameState {
             }
         }
 
-        // coisinhas de lógica de jogo (não deixar aqui)
-        this.ticks--
-        if (this.ticks == 0) {
-            this.spawn(make(new Pig(), {
-                x: Math.random() * 800,
-                y: -128,
-                sx: -5 + Math.random() * 10,
-                sy: 2 + Math.random() * 4
-            }))
-
-            this.ticks = 60
-        }
-
         // troca as pilhas
         let tmp = this._scene
         this._scene = this._alives
@@ -88,14 +91,17 @@ class GameState {
     render(b) {
         b.Cls(255,255,255)
 
-        b.DrawText("Scene stack top:" + this._scene.top, 20, 20)
-        b.DrawText("Alives stack top:" + this._alives.top, 20, 40)
-
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
             obj.render && obj.render(b)
         }
+
+        for (let i = 0; i < this._scene.top; i++) {
+            let obj = this._scene.at(i)
+            obj.renderUi && obj.renderUi(b)
+        }
+
     }
 }
 
-export { GameState, IGameThing }
+export { GameState }
