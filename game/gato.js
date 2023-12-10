@@ -11,52 +11,15 @@ import {
     ClearTouchMove,
     ClearTouchEnd
 } from "../blitz/input"
+import { GameState } from "../game_state"
 
 let sprite
 
-let nubSprite
 
 Preload( async b =>{
     sprite = await b.LoadImage("gato.png")
-    nubSprite = await b.LoadImage("nub.png")
-
 })
 
-class Nub{
-    x = 0
-    y = 0
-    dx = 0
-    dy = 0
-    length = 32
-    touch = -1
-    constructor(_x,_y){
-        this.x = _x
-        this.y = _y
-        this.dx = _x
-        this.dy = _y
-        this.touch = -1
-    }
-    getX(){
-        return Math.min(Math.max( this.dx - this.x, -this.length ), this.length )
-    }
-    getY(){
-        return Math.min(Math.max( this.dy - this.y, -this.length ), this.length )
-    }
-
-    render(b){
-        let x = Math.max( Math.min( this.x + this.length, this.dx), this.x - this.length )
-        let y = Math.max( Math.min( this.y + this.length, this.dy), this.y - this.length )
-        b.DrawImage( nubSprite, x, y)
-    }
-
-    touching(x,y){
-        return Math.abs( x - this.x) <= 16 && Math.abs( y - this.y) <= 16    
-        
-    }
-}
-
-const nubWalk = new Nub(64,300)
-const nubJump = new Nub(1060-64,300)
 
 class Gato {
 
@@ -65,76 +28,52 @@ class Gato {
     x = 128
     y = 64
 
-    walktoX = 128
+    side = 1
+
+    walkingSpeed = 0
+    walking = false
 
     sx = 0
     sy = 0
 
     dead = false
 
-    touchStartHandler
-    touchMoveHandler
-    touchEndHandler
-
-    constructor(){
-        // gatinho começa a andar
-        this.touchStartHandler = OnTouchStart( touches =>{
-            for(let i = 0; i < touches.length; i ++){
-                let {x,y,n} = touches[i]
-                // vê se está perto do nub que faz o gatinho andar...
-                if( nubWalk.touching(x,y) ){
-                    nubWalk.touch = n
-                }
-                // vê se está perto do nub que faz o gatinho pular...
-                if( nubJump.touching(x,y) ){
-                    nubJump.touch = n
-                }
-                            }
-        })
-
-        this.touchMoveHandler = OnTouchMove( touches =>{ 
-            for(let i = 0; i < touches.length; i++){
-                // direção do gatinho
-                let {x,y,n} = touches[i]
-                if(n == nubWalk.touch){
-                    nubWalk.dx = x
-                }
-                if(n == nubJump.touch){
-                    nubJump.dy = y
-                    nubJump.dx = x
-                }
-            }
-        })
-        
-        this.touchEndHandler = OnTouchEnd( touches =>{
-            for(let i =0; i < touches.length; i++){
-                // gatinho para de andar
-                if(touches[i].n == nubWalk.touch){
-                    nubWalk.touch = -1
-                    nubWalk.dx = nubWalk.x
-                }
-                if(touches[i].n == nubJump.touch){
-                    if(this.grounded){
-                        this.sy = -0.4*nubJump.getY()
-                        this.sx = -0.9*nubJump.getX()    
-                    }
-
-                    nubJump.touch = -1
-                    nubJump.dy = nubJump.y
-                    nubJump.dx = nubJump.x
-                    // faz o gatinho pular
-                }
-            }
-        })        
+    /**
+     * @param {number} speed 
+     */
+    walk(speed){
+        if(speed >= 1 || speed <= -1)
+            this.side = speed > 0 ? -1 : 1
+        this.walkingSpeed = speed
+        this.walking = true
     }
 
-    update (s){
+    stop(){
+        this.walkingSpeed = 0
+        this.walking = false
+    }
 
+    /**
+     * @param {number} sx
+     * @param {number} sy
+     */
+    pounce(sx,sy){
+        if(this.grounded){
+            this.side = sx > 0 ? -1 : 1
+            this.sx = sx
+            this.sy = sy
+        }
+    }
+
+    /**
+     * @param {GameState} s
+     */
+    update (s){
         // gato no chão
         if(this.y >= s.screen.height-16){
             this.grounded=true
-            if(nubWalk.touch!==-1){
-                this.sx += 0.4 * nubWalk.getX()
+            if(this.walking){
+                this.sx += 0.4 * this.walkingSpeed
             }else{
                 this.sx *= 0.9
             }
@@ -161,17 +100,11 @@ class Gato {
      * @param {IB2D} b
      */
     render(b){
+        b.SetScale( this.side ,1)
         b.DrawImage( sprite, this.x, this.y )
+        b.SetScale( 1, 1)
     }
 
-    /**
-     * @param {IB2D} b
-     */
-    renderUi(b){
-        // o nub tem que ficar dentro de uma certa área
-        nubWalk.render(b)
-        nubJump.render(b)
-    }
 }
 
 export { Gato }

@@ -248,6 +248,14 @@ class WGL_B2D {
     }
 
     /**
+     * @param {number} x
+     * @param {number} y
+     */
+    SetScale(x,y){
+        this.scale = [x,y]
+    }
+
+    /**
      * @param {image.IWGLImage} imageHandler
      * @param {number} x
      * @param {number} y
@@ -274,7 +282,9 @@ class WGL_B2D {
             this.drawColor,
             this.rotation,
             x,
-            y
+            y,
+            this.scale[0],
+            this.scale[1]
         )
     }
 
@@ -306,7 +316,9 @@ class WGL_B2D {
             this.drawColor,
             this.rotation,
             x,
-            y
+            y,
+            this.scale[0],
+            this.scale[1]
         )
     }
     

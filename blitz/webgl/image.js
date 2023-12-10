@@ -78,8 +78,10 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
  * @param {number} rotation
  * @param {number} x 
  * @param {number} y 
+ * @param {number} scaleX 
+ * @param {number} scaleY
  */
-function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y){
+function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, scaleY){
     const modelViewMatrix = mat4.create()
     // cria uma matriz de translação
     mat4.translate(
@@ -96,7 +98,7 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y){
     mat4.scale(
         modelViewMatrix,
         modelViewMatrix,
-        [imageHandler.frameWidth,imageHandler.frameHeight,1]
+        [imageHandler.frameWidth * scaleX,imageHandler.frameHeight * scaleY,1]
     )
 
     ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)

@@ -43,17 +43,6 @@ function AttachInput(width, height, canvasElementId){
         input.mouseY = (ev.clientY - rect.top)/(rect.height)*input.height | 0
     })
 
-    canvasElement.addEventListener("touchmove", ev =>{
-        let t = ev.touches[0]
-        input.oldMouseX = input.mouseX
-        input.oldMouseY = input.mouseY
-        const rect = canvasElement.getBoundingClientRect()
-
-        input.mouseX = (t.clientX - rect.left)/(rect.width)*width | 0
-        input.mouseY = (t.clientY - rect.top)/(rect.height)*height | 0
-
-    })
-
     input.canvasElement.addEventListener("mousedown", ev =>{
         ev.preventDefault()
         input.mouseDown[ ev.button ] = true

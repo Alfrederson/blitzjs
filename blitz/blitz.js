@@ -69,6 +69,13 @@ class IB2D{
      * @param {number} angle
      */
     SetAngle(angle){}
+
+    /**
+     * Define a escala do desenho.
+     * @param {number} x
+     * @param {number} y
+     */
+    SetScale(x,y){}
 }
 
 /** @interface */
