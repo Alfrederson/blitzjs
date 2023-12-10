@@ -111,9 +111,6 @@ class Gato {
         )!==-1){
             this.sx = 0
             this.x += out[0]+out[2]/2 > this.x+CAT_WIDTH/2 ? -out[2] : out[2]
-            document.getElementById("debug").innerText = out.map(x => x.toFixed(2)).join(",")    
-        }else{
-            document.getElementById("debug").innerText = ""   
         }       
     }
 
