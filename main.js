@@ -22,6 +22,7 @@ import { GameState } from "./game_state"
 
 import { Gato } from "./game/gato.js"
 import { Nub } from "./game/nub.js"
+import { TileMap } from "./game/tileMap.js"
 
 
 
@@ -34,7 +35,9 @@ class CatGame {
   touchEndHandler
   gato = new Gato()
   nubWalk = new Nub(64, 150)
-  nubJump = new Nub(800 - 64, 150)
+  nubJump = new Nub(700 - 64, 150)
+
+  tileMap = new TileMap()
 
   setupInput() {
     // gatinho começa a andar
@@ -90,8 +93,8 @@ class CatGame {
   setup(b) {
 
     this.gameState.screen = {
-      width: 800,
-      height: 300
+      width: 700,
+      height: 200
     }
 
     const { width, height } = this.gameState.screen
@@ -115,7 +118,10 @@ class CatGame {
       this.gato.pounce(-0.3 * this.nubJump.releasedX, -0.3 * this.nubJump.releasedY)
     }
     this.gameState.update()
+
+    
     this.gameState.render(b)
+    this.tileMap.render(b)
 
     this.nubJump.render(b)
     this.nubWalk.render(b)
