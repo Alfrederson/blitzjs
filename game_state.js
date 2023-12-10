@@ -10,6 +10,7 @@ import {
     MouseX,
     MouseY
 } from "./blitz/input.js"
+import { TileMap } from "./game/tileMap.js"
 
 import Stack from "./stack.js"
 
@@ -23,25 +24,14 @@ const MAX_THINGS = 500
  * @param {function} [renderUi] - Se ele desenha coisa na UI.
  */
 
-// /** @interface  */
-// class IGameThing {
-//     /** @type {boolean} */
-//     dead
-//     /** @param {GameState} gamestate */
-//     update(gamestate) { }
-//     /** @param {IB2D} b2d */
-//     render(b2d) { }
-
-//     /** @param {IB2D} b2d */
-//     renderUi(b2d){ }
-// }
-
 class GameState {
 
     screen = {
         width : 0,
         height : 0
     }
+
+    tileMap = new TileMap()
 
     /** @type {Stack} */
     _scene = new Stack(MAX_THINGS)
@@ -89,6 +79,8 @@ class GameState {
      * @param {IB2D} b 
      */
     render(b) {
+        this.tileMap.render(b) 
+
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
             obj.render && obj.render(b)

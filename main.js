@@ -22,7 +22,6 @@ import { GameState } from "./game_state"
 
 import { Gato } from "./game/gato.js"
 import { Nub } from "./game/nub.js"
-import { TileMap } from "./game/tileMap.js"
 import { Pombo } from "./game/pombo.js"
 
 const SCREEN_WIDTH = 800
@@ -38,8 +37,6 @@ class CatGame {
   gato = new Gato()
   nubWalk = new Nub(64, SCREEN_HEIGHT/2)
   nubJump = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT/2)
-
-  tileMap = new TileMap()
 
   setupInput() {
     // gatinho começa a andar
@@ -80,10 +77,6 @@ class CatGame {
         }
         // faz o gatinho pular se a gente solta o nub da direita
         if (touches[i].n == this.nubJump.touch) {
-          // if(this.grounded && nubJump.getY() > 5 ){
-          //     this.sy = -0.3*nubJump.getY()
-          //     this.sx = -0.8*nubJump.getX()    
-          // }
           this.nubJump.release()
         }
       }
@@ -106,9 +99,8 @@ class CatGame {
 
     this.setupInput()
 
-    this.gameState.spawn(this.gato)
-
-    this.gameState.spawn( new Pombo())
+    this.gameState.spawn( this.gato )
+    this.gameState.spawn( new Pombo() )
   }
 
   /** @param {IB2D} b */
@@ -124,8 +116,9 @@ class CatGame {
     this.gameState.update()
 
     b.Cls(255,255,255)
-    this.tileMap.render(b)    
+       
     this.gameState.render(b)
+
 
     this.nubJump.render(b)
     this.nubWalk.render(b)

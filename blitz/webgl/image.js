@@ -5,6 +5,8 @@ import { IImage } from "../blitz"
 class IWGLImage extends IImage {
     /** @type {WebGLTexture} */
     texture
+    /** @type {number[][]} */
+    uvs
 }
 
 /** @type{ Map<string,IWGLImage> } */
@@ -35,7 +37,8 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
             frameWidth,
             frameHeight,
             frameCount : 1,
-            texture
+            texture,
+            uvs : []
         }
 
         const image = new Image()
@@ -47,6 +50,17 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
 
             if(frameWidth !== 0 && frameHeight !== 0){
                 result.frameCount = (result.width / frameWidth)|0 * (result.height / frameHeight)|0 
+                for(let i = 0; i < result.frameCount;i++){
+                    let pos = i / result.frameCount
+
+                    let u0 = pos
+                    let v0 = 0
+                    let u1 = pos + (1/result.frameCount) 
+                    let v1 = 1
+                    
+                    // @ts-expect-error
+                    result.uvs.push([u0,v0,u1,v1])
+                }
             }else{
                 result.frameWidth = image.width
                 result.frameHeight = image.height
@@ -68,7 +82,9 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
     })
 }
 
+
 let oldImage
+let oldTextCoord
 /**
  * 
  * @param {WebGLRenderingContext} ctx 
@@ -101,7 +117,7 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
         [imageHandler.frameWidth * scaleX,imageHandler.frameHeight * scaleY,1]
     )
 
-    if(oldImage != imageHandler.texture){
+    if(oldImage !== imageHandler.texture){
         ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)
         oldImage = imageHandler.texture
     }

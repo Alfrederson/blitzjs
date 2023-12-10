@@ -60,6 +60,7 @@ function setPositionAttribute(ctx, buffers, programInfo){
     )
 }
 
+let oldBuffers = undefined
 /**
  * @param {WebGLRenderingContext} ctx 
  * @param {*} buffers 
@@ -67,7 +68,7 @@ function setPositionAttribute(ctx, buffers, programInfo){
  * @param {number[]} uv
  */
 function setTextureCoordAttribute(ctx,buffers,programInfo,uv){
-    ctx.bindBuffer( ctx.ARRAY_BUFFER,buffers )
+    ctx.bindBuffer( ctx.ARRAY_BUFFER , buffers )
     ctx.bufferData(
         ctx.ARRAY_BUFFER,
         new Float32Array(uv),
@@ -236,6 +237,7 @@ class WGL_B2D {
      * @param {number} b 
      */
     Cls(r,g,b){
+        oldBuffers = undefined
         draw.cls( this.ctx, r,g,b )
     }
 
@@ -264,16 +266,19 @@ class WGL_B2D {
         if(!this.initialized)
             throw "contexto não inicializado"
         
-        setTextureCoordAttribute(
-             this.ctx,
-             this.textureCoordinateBuffer,
-             this.programInfo,[
-                 1,1,
-                 0,1,
-                 1,0,
-                 0,0
-             ]            
-         )
+        if(oldBuffers){
+            oldBuffers = undefined
+            setTextureCoordAttribute(
+                this.ctx,
+                this.textureCoordinateBuffer,
+                this.programInfo,[
+                    1,1,
+                    0,1,
+                    1,0,
+                    0,0
+                ]            
+            )   
+        }
 
         image.drawImage(
             this.ctx,
@@ -288,27 +293,27 @@ class WGL_B2D {
         )
     }
 
+
     DrawImageFrame(imageHandler, x, y, frame){
         if(!this.initialized)
             throw "contexto não inicializado"
 
-        let pos = frame / imageHandler.frameCount
 
-        let u0 = pos
-        let v0 = 0
-        let u1 = pos + (1/imageHandler.frameCount) 
-        let v1 = 1
+        if(oldBuffers !== imageHandler.uvs[frame]){
+            oldBuffers = imageHandler.uvs[frame]
+            const [u0,v0,u1,v1] = imageHandler.uvs[frame]
+            setTextureCoordAttribute(
+                this.ctx,
+                this.textureCoordinateBuffer,
+                this.programInfo,[
+                    u0,v0,
+                    u0,v1,
+                    u1,v0,
+                    u1,u1
+                ]            
+            )    
+        }
 
-        setTextureCoordAttribute(
-            this.ctx,
-            this.textureCoordinateBuffer,
-            this.programInfo,[
-                u0,v0,
-                u0,v1,
-                u1,v0,
-                u1,u1
-            ]            
-        )
         image.drawImage(
             this.ctx,
             imageHandler,
