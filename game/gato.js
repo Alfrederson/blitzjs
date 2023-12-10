@@ -69,17 +69,7 @@ class Gato {
      * @param {GameState} s
      */
     update (s){
-        // gato no chão
-        if(this.y >= s.screen.height-16){
-            this.grounded=true
-            if(this.walking){
-                this.sx += 0.4 * this.walkingSpeed
-            }else{
-                this.sx *= 0.9
-            }
-        }else{
-            this.grounded=false
-        }
+
 
         if(this.sx >= 4)
             this.sx = 4
@@ -91,9 +81,22 @@ class Gato {
         this.x += this.sx
         this.y += this.sy
 
-        if(this.y >= s.screen.height-16){
-            this.y = s.screen.height-16
+        if(this.y >= s.screen.height-48){
+            if(this.walking){
+                this.sx += 0.4 * this.walkingSpeed
+            }else{
+                this.sx *= 0.9
+            }
+    
+            this.y = s.screen.height-48
+            this.grounded=true
+        }else{
+            this.grounded=false
         }
+        if(this.x <= 48)
+            this.x = 48
+        if(this.x >= s.screen.width-48)
+            this.x = s.screen.width-48
     }
 
     /**

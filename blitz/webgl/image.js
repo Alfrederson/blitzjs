@@ -68,7 +68,7 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
     })
 }
 
-
+let oldImage
 /**
  * 
  * @param {WebGLRenderingContext} ctx 
@@ -101,7 +101,10 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
         [imageHandler.frameWidth * scaleX,imageHandler.frameHeight * scaleY,1]
     )
 
-    ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)
+    if(oldImage != imageHandler.texture){
+        ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)
+        oldImage = imageHandler.texture
+    }
 
     // escala e posiciona o quadradinho
     ctx.uniformMatrix4fv(

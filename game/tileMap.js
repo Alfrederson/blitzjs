@@ -1,7 +1,12 @@
 import { IB2D, Preload } from "../blitz/blitz"
 
 const tilesTxt = `
-#########################
+#                       #
+#                       #
+#                       #
+#                       #
+#                       #
+#                       #
 #                       #
 #                       #
 #                       #
@@ -25,10 +30,6 @@ class TileMap {
             letra => letra == "#" ? 1 : 0
         )
     )
-
-    constructor(){
-        console.log(this.tiles)
-    }
 
     /**
      * @param {IB2D} b 

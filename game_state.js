@@ -89,8 +89,6 @@ class GameState {
      * @param {IB2D} b 
      */
     render(b) {
-        b.Cls(255,255,255)
-
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
             obj.render && obj.render(b)

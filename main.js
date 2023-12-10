@@ -23,8 +23,10 @@ import { GameState } from "./game_state"
 import { Gato } from "./game/gato.js"
 import { Nub } from "./game/nub.js"
 import { TileMap } from "./game/tileMap.js"
+import { Pombo } from "./game/pombo.js"
 
-
+const SCREEN_WIDTH = 800
+const SCREEN_HEIGHT = 500
 
 
 /** @implements {IApp} */
@@ -34,8 +36,8 @@ class CatGame {
   touchMoveHandler
   touchEndHandler
   gato = new Gato()
-  nubWalk = new Nub(64, 150)
-  nubJump = new Nub(700 - 64, 150)
+  nubWalk = new Nub(64, SCREEN_HEIGHT/2)
+  nubJump = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT/2)
 
   tileMap = new TileMap()
 
@@ -93,8 +95,8 @@ class CatGame {
   setup(b) {
 
     this.gameState.screen = {
-      width: 700,
-      height: 200
+      width: SCREEN_WIDTH,
+      height: SCREEN_HEIGHT
     }
 
     const { width, height } = this.gameState.screen
@@ -105,6 +107,8 @@ class CatGame {
     this.setupInput()
 
     this.gameState.spawn(this.gato)
+
+    this.gameState.spawn( new Pombo())
   }
 
   /** @param {IB2D} b */
@@ -119,9 +123,9 @@ class CatGame {
     }
     this.gameState.update()
 
-    
+    b.Cls(255,255,255)
+    this.tileMap.render(b)    
     this.gameState.render(b)
-    this.tileMap.render(b)
 
     this.nubJump.render(b)
     this.nubWalk.render(b)
