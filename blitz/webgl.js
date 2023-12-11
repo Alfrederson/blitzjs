@@ -60,7 +60,7 @@ function setPositionAttribute(ctx, buffers, programInfo){
     )
 }
 
-let oldBuffers = undefined
+
 /**
  * @param {WebGLRenderingContext} ctx 
  * @param {*} buffers 
@@ -113,6 +113,10 @@ class WGL_B2D {
     scale = [1,1]
     rotation = 0
     drawColor = [1,1,1,1]
+
+    /** @type { image.IWGLImage | null} */
+    lastImage = null
+    lastFrame = 0
 
     /**
      * Carrega uma imagem.
@@ -237,7 +241,8 @@ class WGL_B2D {
      * @param {number} b 
      */
     Cls(r,g,b){
-        oldBuffers = undefined
+        this.lastImage = null
+        this.lastFrame = 0
         draw.cls( this.ctx, r,g,b )
     }
 
@@ -266,8 +271,9 @@ class WGL_B2D {
         if(!this.initialized)
             throw "contexto não inicializado"
         
-        if(oldBuffers){
-            oldBuffers = undefined
+        if((this.lastImage !== imageHandler) || (this.lastFrame !== 0)){
+            this.lastImage = imageHandler
+            this.lastFrame = 0
             setTextureCoordAttribute(
                 this.ctx,
                 this.textureCoordinateBuffer,
@@ -298,18 +304,22 @@ class WGL_B2D {
         if(!this.initialized)
             throw "contexto não inicializado"
 
-
-        if(oldBuffers !== imageHandler.uvs[frame]){
-            oldBuffers = imageHandler.uvs[frame]
+        if((this.lastImage !== imageHandler) || (this.lastFrame !== frame)){
+            this.lastImage = imageHandler
+            this.lastFrame = frame
             const [u0,v0,u1,v1] = imageHandler.uvs[frame]
+            // 1,1,
+            // 0,1,
+            // 1,0,
+            // 0,0            
             setTextureCoordAttribute(
                 this.ctx,
                 this.textureCoordinateBuffer,
                 this.programInfo,[
-                    u0,v0,
+                    u1,v1,
                     u0,v1,
                     u1,v0,
-                    u1,u1
+                    u0,v0
                 ]            
             )    
         }

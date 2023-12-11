@@ -49,18 +49,27 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
             result.height = image.height
 
             if(frameWidth !== 0 && frameHeight !== 0){
-                result.frameCount = (result.width / frameWidth)|0 * (result.height / frameHeight)|0 
-                for(let i = 0; i < result.frameCount;i++){
-                    let pos = i / result.frameCount
-
-                    let u0 = pos
-                    let v0 = 0
-                    let u1 = pos + (1/result.frameCount) 
-                    let v1 = 1
-                    
-                    // @ts-expect-error
-                    result.uvs.push([u0,v0,u1,v1])
+                let framesX =(result.width/frameWidth)|0
+                let framesY =(result.height/frameHeight)|0
+                let uvw = 1 / framesX
+                let uvh = 1 / framesY
+                result.frameCount = framesX * framesY
+                for(let y = 0; y < framesY; y++){
+                    for(let x = 0; x < framesX; x++){
+                        // @ts-expect-error
+                        // 1,1,
+                        // 0,1,
+                        // 1,0,
+                        // 0,0                        
+                        result.uvs.push([
+                            x * uvw,
+                            y * uvh,
+                            x * uvw + uvw,
+                            y * uvh + uvh
+                        ])
+                    }
                 }
+                console.log(result.uvs)
             }else{
                 result.frameWidth = image.width
                 result.frameHeight = image.height

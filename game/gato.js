@@ -12,13 +12,14 @@ import {
     ClearTouchEnd
 } from "../blitz/input"
 import { GameState } from "../game_state"
+import { FILTRO_BEIRA, FILTRO_SOLIDO } from "./tileMap";
 import { constrain } from "./util";
 
 let sprite
 
 
 Preload( async b =>{
-    sprite = await b.LoadImage("gato.png")
+    sprite = await b.LoadAnimImage("gato.png",64,64)
 })
 
 const CAT_WIDTH = 48
@@ -27,6 +28,9 @@ const CAT_HEIGHT = 32
 class Gato {
 
     grounded = false
+    hanging = false
+    touchingLedge = false
+    jumping = false
     
     x = 128
     y = 64
@@ -43,11 +47,12 @@ class Gato {
 
     touchingMap = -1
 
+
     /**
      * @param {number} speed 
      */
     walk(speed){
-        if(speed >= 1 || speed <= -1)
+        if(speed >= 0.1 || speed <= -0.1)
             this.side = speed > 0 ? -1 : 1
         this.walkingSpeed = speed
         this.walking = true
@@ -63,10 +68,19 @@ class Gato {
      * @param {number} sy
      */
     pounce(sx,sy){
-        if(this.grounded){
+        if(this.grounded || this.hanging){
             this.side = sx > 0 ? -1 : 1
-            this.sx = sx
-            this.sy = sy
+            this.sx += sx * 24
+            this.sy += sy * 24
+            this.hanging = false
+            this.jumping = true
+        }
+    }
+
+    hang(){
+        if(this.touchingLedge){
+            this.hanging = true
+            this.jumping = false
         }
     }
 
@@ -79,18 +93,24 @@ class Gato {
         
         let out = [0,0,0,0]
 
+        // se o gatinho tá se pendurando,
+        // ele não pode cair.
         this.sy += 0.2
+        if(this.hanging) this.sy = 0
+
         this.y += this.sy 
 
         // corrigiu verticalmente.
         if(s.tileMap.objectCollides(
             [this.x, this.y, CAT_WIDTH, CAT_HEIGHT],
-            out
+            out,
+            FILTRO_SOLIDO
         )!==-1){
             // batendo a cabeça no teto...
             this.y += this.sy > 0 ? -out[3] : out[3]
             this.sy = 0
             this.grounded=true    
+            this.jumping=false
         }else{            
             this.grounded=false
         }
@@ -99,30 +119,55 @@ class Gato {
             if(this.walking){
                 this.sx += 0.4 * this.walkingSpeed
             }else{
-                this.sx *= 0.9
+                this.sx *= 0.8
             }            
-        }         
+        }
+                
         this.sx = constrain(this.sx, -4,4)
+
+        // se está pendurado, ele não sai do lugar...
+        if(this.hanging) this.sx = 0
         this.x += this.sx
         // bora ver se ele bate nas paredes.
         if(s.tileMap.objectCollides(
             [this.x, this.y, CAT_WIDTH, CAT_HEIGHT],
-            out
+            out,
+            FILTRO_SOLIDO
         )!==-1){
             this.sx = 0
             this.x += out[0]+out[2]/2 > this.x+CAT_WIDTH/2 ? -out[2] : out[2]
         }       
-    }
 
+        // bora ver se ele pode se pendurar
+        if(s.tileMap.objectCollides(
+            [this.x,this.y, CAT_WIDTH,CAT_HEIGHT],
+            out,
+            FILTRO_BEIRA
+        )!==-1){
+            // o gato tem que estar bem perto da beira.
+            this.touchingLedge = out[2] > 20
+        }else{
+            this.touchingLedge = false
+        }
+    }
     /**
      * @param {IB2D} b
+     * @param {GameState} s
      */
-    render(b){
+    render(b,s){
+        let frame = 0
+        if(this.jumping)
+            frame = 1
+        if(this.hanging)
+            frame = 2
+
         b.SetScale( this.side ,1)
-
-        b.DrawImage( sprite, this.x+CAT_WIDTH/2, this.y+CAT_HEIGHT/2 )
+        b.DrawImageFrame(sprite,
+            this.x+CAT_WIDTH/2 - s.screen.cameraX,
+            this.y+CAT_HEIGHT/2 - s.screen.cameraY,
+            frame
+        )
         b.SetScale( 1, 1)
-
     }
 
 }

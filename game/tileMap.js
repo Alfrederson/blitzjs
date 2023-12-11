@@ -1,26 +1,45 @@
 import { IB2D, Preload } from "../blitz/blitz"
+import { GameState } from "../game_state"
 import { constrain, rectsIntersect } from "./util"
 
 const tilesTxt = `
-1                       1
-1                       1
-1                       1
-1                       1
-1         222222        1
-1                       1
-1                       1
-1 22                 22 1
-1                       1
-1                       1
-1   22             22   1
-1                       1
-1                       1
-122222     22222222222221
-122222     22222222222221
-1111111111111111111111111
+1111111111111111111111111111111111111111
+1                                      1
+1                                      1
+1                                      1
+1                                      1
+1        21111112                      1
+1                                      1
+1                                      1
+1 112               2112          211111
+1                                      1
+1                                      1
+1                                      1
+1       2111111112                     1
+1                                      1
+1                                      1
+1                                      1
+1  2112           2112              2111
+1                                      1
+1                                      1
+1111112   21111111111              21111
+111111     1111111111               1111
+1111111111111111111111111111111111111111
+1111111111111111111111111111111111111111
+1111111111111111111111111111111111111111
 `.trim()
 
 let tileset
+
+const FILTRO_SOLIDO    = 0b0000_0001
+const FILTRO_BEIRA     = 0b0000_0010
+const FILTRO_INVISIVEL = 0b0000_0100
+// [sólido, beirada]
+const tileInfo = [
+    FILTRO_INVISIVEL,
+    FILTRO_SOLIDO,
+    FILTRO_BEIRA //| FILTRO_INVISIVEL
+]
 
 const TILE_WIDTH = 32
 const TILE_HEIGHT = 32
@@ -41,23 +60,33 @@ class TileMap {
     constructor(){
         this.height = this.tiles.length
         this.width = this.tiles[0].length
-        console.log(this.width, this.height)
     }
     /**
      * @param {IB2D} b 
+     * @param {GameState} s
      */
-    render (b){
-        let width = this.width
-        let height = this.height
-        let tw = TILE_WIDTH/2
-        let th = TILE_HEIGHT/2
-        for(let y = 0; y < height; y++){
-            for(let x = 0; x < width; x++){
-                if(this.tiles[y][x] > 0){
+    render (b,s){
+        let fromX = (s.screen.cameraX / TILE_WIDTH)|0
+        let toX = fromX + (s.screen.width / TILE_WIDTH)|0
+        let fromY = (s.screen.cameraY / TILE_WIDTH)|0
+        let toY = fromY + (s.screen.height / TILE_HEIGHT)|0
+
+        fromX = constrain(fromX,0,this.width)
+        toX = constrain(toX+1,0,this.width)
+        fromY = constrain(fromY,0,this.height)
+        toY = constrain(toY+1,0,this.height)
+
+
+        const 
+            tw = TILE_WIDTH/2,
+            th = TILE_HEIGHT/2
+        for(let y = fromY; y < toY; y++){
+            for(let x = fromX; x < toX; x++){
+                if(!(tileInfo[this.tiles[y][x]] & FILTRO_INVISIVEL)){
                     b.DrawImageFrame(
                         tileset,
-                        x*TILE_WIDTH + tw,
-                        y*TILE_HEIGHT + th,
+                        x*TILE_WIDTH + tw - s.screen.cameraX,
+                        y*TILE_HEIGHT + th - s.screen.cameraY,
                         this.tiles[y][x]-1
                     )
                 }
@@ -73,8 +102,9 @@ class TileMap {
      * retorna o número do tile com o qual um objeto colide, ou -1 caso não colida.
      * @param {number[]} obj - é um retângulo representado como array [x,y,w,h] 
      * @param {number[]} out - é uma array que recebe a intersecção, caso haja , no formato [x,y,w,h]
+     * @param {number} filtro - uma combinação de filtros (SOLIDO, BEIRA, etc)
      */
-    objectCollides(obj, out){
+    objectCollides(obj, out, filtro){
         const [x,y,w,h] = obj
         // testar só os tiles próximos...
 
@@ -88,25 +118,26 @@ class TileMap {
         fromY = constrain(fromY-2, 0, this.height)|0
         toY = constrain(toY+2,0, this.height)|0
 
-        let tw = TILE_WIDTH/2
-        let th = TILE_HEIGHT/2
         // testa os tiles...
         for(let x = fromX; x < toX; x++){
             for(let y = fromY; y < toY; y++){
-                if(this.tiles[y][x] == 0)
+                if(!(tileInfo[this.tiles[y][x]] & filtro))
                     continue
                 // esse tile...
                 const tileRect = [x*TILE_WIDTH,y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT]
                 // checa se colide...
-                if( rectsIntersect(tileRect, obj, out) ){
+                if( rectsIntersect(tileRect, obj, out) )
                     return this.tiles[y][x]
-                }
             }
         }
-
         return -1
     }
 }
 
 
-export { TileMap }
+export {
+    TileMap,
+    tileInfo,
+    FILTRO_BEIRA,
+    FILTRO_SOLIDO
+}

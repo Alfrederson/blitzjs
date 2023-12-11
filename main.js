@@ -25,7 +25,7 @@ import { Nub } from "./game/nub.js"
 import { Pombo } from "./game/pombo.js"
 
 const SCREEN_WIDTH = 800
-const SCREEN_HEIGHT = 500
+const SCREEN_HEIGHT = 800/1.777
 
 
 /** @implements {IApp} */
@@ -37,20 +37,19 @@ class CatGame {
   gato = new Gato()
   nubWalk = new Nub(64, SCREEN_HEIGHT/2)
   nubJump = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT/2)
+  nubHang = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT/2 - 96)
 
   setupInput() {
+    const nubs = [this.nubWalk, this.nubJump, this.nubHang]
     // gatinho começa a andar
     this.touchStartHandler = OnTouchStart(touches => {
-
       for (let i = 0; i < touches.length; i++) {
-        let { x, y, n } = touches[i]
-        // vê se está perto do nub que faz o gatinho andar...
-        if (this.nubWalk.touching(x, y)) {
-          this.nubWalk.touch = n
-        }
-        // vê se está perto do nub que faz o gatinho pular...
-        if (this.nubJump.touching(x, y)) {
-          this.nubJump.touch = n
+        let { x, y, n } = touches[i];
+        for(let nub of nubs){
+          if(nub.touching(x,y)){
+            nub.touch = n
+            continue
+          }
         }
       }
     })
@@ -71,17 +70,13 @@ class CatGame {
 
     this.touchEndHandler = OnTouchEnd(touches => {
       for (let i = 0; i < touches.length; i++) {
-        // gatinho para de andar
-        if (touches[i].n == this.nubWalk.touch) {
-          this.nubWalk.release()
-        }
-        // faz o gatinho pular se a gente solta o nub da direita
-        if (touches[i].n == this.nubJump.touch) {
-          this.nubJump.release()
+        for(let nub of nubs){
+          if(touches[i].n == nub.touch){
+            nub.release()
+          }
         }
       }
     })
-
   }
 
   /** @param {IB2D} b */
@@ -89,7 +84,9 @@ class CatGame {
 
     this.gameState.screen = {
       width: SCREEN_WIDTH,
-      height: SCREEN_HEIGHT
+      height: SCREEN_HEIGHT,
+      cameraX: SCREEN_WIDTH / 2,
+      cameraY: SCREEN_HEIGHT / 2
     }
 
     const { width, height } = this.gameState.screen
@@ -106,22 +103,34 @@ class CatGame {
   /** @param {IB2D} b */
   draw(b) {
 
+    // movimento normal
     if (this.nubWalk.touch !== -1) {
       this.gato.walk(this.nubWalk.getX())
     } else {
       this.gato.stop()
     }
+    // pulando
     if (this.nubJump.released()) {
       this.gato.pounce(-0.3 * this.nubJump.releasedX, -0.3 * this.nubJump.releasedY)
     }
-    this.gameState.update()
+    // se pendurando
+    if (this.nubHang.held()){
+      this.gato.hang()
+    }
 
+    this.gameState.update()
     b.Cls(255,255,255)
+
+    this.gameState.lookAt( this.gato.x - SCREEN_WIDTH/2, this.gato.y - SCREEN_HEIGHT/2 )
        
     this.gameState.render(b)
 
     this.nubJump.render(b)
     this.nubWalk.render(b)
+
+    if(this.gato.touchingLedge){
+      this.nubHang.render(b)
+    }
   }
 
 }

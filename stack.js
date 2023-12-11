@@ -1,3 +1,7 @@
+/**
+ * @class 
+ * @template T
+ */
 export default class {
 
     top = 0
@@ -12,7 +16,7 @@ export default class {
     
     /**
      * Adds something to the top of the stack.
-     * @param {any} thing
+     * @param {T} thing
      */
     push(thing){
         this.stuff[this.top] = thing
@@ -21,7 +25,7 @@ export default class {
 
     /**
      * Removes something from the top of the stack.
-     * @returns {any}
+     * @returns {T}
      */
     pop(){
         let thing = this.stuff[this.top]
@@ -34,7 +38,7 @@ export default class {
     /**
      * Vê objeto na posição i da pilha
      * @param {number} i 
-     * @returns {object}
+     * @returns {T}
      */
     at(i){
         return this.stuff[i]

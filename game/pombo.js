@@ -1,4 +1,4 @@
-import { Preload } from "../blitz/blitz"
+import { IB2D, Preload } from "../blitz/blitz"
 import { GameState } from "../game_state"
 
 let sprite
@@ -25,8 +25,15 @@ class Pombo {
         }
     }
 
-    render(b){
-        b.DrawImage(sprite, this.x, this.y)
+    /**
+     * @param {IB2D} b
+     * @param {GameState} s
+     */
+    render(b,s){
+        b.DrawImage(sprite,
+            this.x - s.screen.cameraX,
+            this.y - s.screen.cameraY
+        )
     }
 }
 

@@ -25,10 +25,10 @@ class Nub {
     this.touch = -1
   }
   getX() {
-    return Math.min(Math.max(this.dx - this.x, -this.length), this.length)
+    return Math.min(Math.max(this.dx - this.x, -this.length), this.length)/this.length
   }
   getY() {
-    return Math.min(Math.max(this.dy - this.y, -this.length), this.length)
+    return Math.min(Math.max(this.dy - this.y, -this.length), this.length)/this.length
   }
 
   /** 
@@ -45,6 +45,9 @@ class Nub {
   touching(x, y) {
     return Math.abs(x - this.x) <= this.radius && Math.abs(y - this.y) <= this.radius * 2
   }
+  held(){
+    return this.touch !== -1
+  }
   released() {
     let r = this.justReleased
     this.justReleased = false
@@ -53,8 +56,8 @@ class Nub {
   release() {
     this.justReleased = true
     this.touch = -1
-    this.releasedX = Math.max(-this.length, Math.min(this.dx - this.x, this.length))
-    this.releasedY = Math.max(-this.length, Math.min(this.dy - this.y, this.length))
+    this.releasedX = Math.max(-this.length, Math.min(this.dx - this.x, this.length)) / this.length
+    this.releasedY = Math.max(-this.length, Math.min(this.dy - this.y, this.length)) / this.length
     this.dx = this.x
     this.dy = this.y
   }
