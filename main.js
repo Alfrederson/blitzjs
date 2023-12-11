@@ -105,7 +105,7 @@ class CatGame {
 
   /** @param {IB2D} b */
   draw(b) {
-    
+
     if (this.nubWalk.touch !== -1) {
       this.gato.walk(this.nubWalk.getX())
     } else {
@@ -119,7 +119,6 @@ class CatGame {
     b.Cls(255,255,255)
        
     this.gameState.render(b)
-
 
     this.nubJump.render(b)
     this.nubWalk.render(b)
