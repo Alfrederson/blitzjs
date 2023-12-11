@@ -8,15 +8,9 @@ const tilesTxt = `
 1                                      1
 1                                      1
 1                                      1
-1        21111112                      1
 1                                      1
 1                                      1
 1 112               2112          211111
-1                                      1
-1                                      1
-1                                      1
-1       2111111112                     1
-1                                      1
 1                                      1
 1                                      1
 1  2112           2112              2111
@@ -38,7 +32,7 @@ const FILTRO_INVISIVEL = 0b0000_0100
 const tileInfo = [
     FILTRO_INVISIVEL,
     FILTRO_SOLIDO,
-    FILTRO_BEIRA //| FILTRO_INVISIVEL
+    FILTRO_BEIRA | FILTRO_INVISIVEL
 ]
 
 const TILE_WIDTH = 32
@@ -76,17 +70,13 @@ class TileMap {
         fromY = constrain(fromY,0,this.height)
         toY = constrain(toY+1,0,this.height)
 
-
-        const 
-            tw = TILE_WIDTH/2,
-            th = TILE_HEIGHT/2
         for(let y = fromY; y < toY; y++){
             for(let x = fromX; x < toX; x++){
                 if(!(tileInfo[this.tiles[y][x]] & FILTRO_INVISIVEL)){
                     b.DrawImageFrame(
                         tileset,
-                        x*TILE_WIDTH + tw - s.screen.cameraX,
-                        y*TILE_HEIGHT + th - s.screen.cameraY,
+                        x*TILE_WIDTH - s.screen.cameraX,
+                        y*TILE_HEIGHT - s.screen.cameraY,
                         this.tiles[y][x]-1
                     )
                 }

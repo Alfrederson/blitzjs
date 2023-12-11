@@ -47,7 +47,7 @@ class CatGame {
         let { x, y, n } = touches[i];
         for(let nub of nubs){
           if(nub.touching(x,y)){
-            nub.touch = n
+            nub.press(x,y,n)
             continue
           }
         }
@@ -59,11 +59,11 @@ class CatGame {
         // direção do gatinho
         let { x, y, n } = touches[i]
         if (n == this.nubWalk.touch) {
-          this.nubWalk.dx = x
+          this.nubWalk.move(x,y)
+          this.nubWalk.dy = 0
         }
         if (n == this.nubJump.touch) {
-          this.nubJump.dy = y
-          this.nubJump.dx = x
+          this.nubJump.move(x,y)
         }
       }
     })
@@ -97,7 +97,18 @@ class CatGame {
     this.setupInput()
 
     this.gameState.spawn( this.gato )
-    this.gameState.spawn( new Pombo() )
+ 
+    for(let x = 0; x < this.gameState.tileMap.width; x++){
+      for(let y = 0; y < this.gameState.tileMap.height-1; y++){
+        if(this.gameState.tileMap.tiles[y][x] == 0 && this.gameState.tileMap.tiles[y+1][x]!==0){
+          if(Math.random()>=0.85){
+            this.gameState.spawn( new Pombo(x * 32 + 16, y * 32 + 16))
+          }
+        }
+      }
+    }
+
+
   }
 
   /** @param {IB2D} b */

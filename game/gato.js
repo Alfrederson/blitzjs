@@ -22,8 +22,14 @@ Preload( async b =>{
     sprite = await b.LoadAnimImage("gato.png",64,64)
 })
 
+const CAT_FRAME_WIDTH = 64
+const CAT_FRAME_HEIGHT = 64
+
 const CAT_WIDTH = 48
-const CAT_HEIGHT = 32
+const CAT_HEIGHT = 36
+
+const CAT_MARGIN_X = (CAT_FRAME_WIDTH-CAT_WIDTH)/2
+const CAT_MARGIN_Y = (CAT_FRAME_HEIGHT-CAT_HEIGHT)/2
 
 class Gato {
 
@@ -99,7 +105,6 @@ class Gato {
         if(this.hanging) this.sy = 0
 
         this.y += this.sy 
-
         // corrigiu verticalmente.
         if(s.tileMap.objectCollides(
             [this.x, this.y, CAT_WIDTH, CAT_HEIGHT],
@@ -163,8 +168,8 @@ class Gato {
 
         b.SetScale( this.side ,1)
         b.DrawImageFrame(sprite,
-            this.x+CAT_WIDTH/2 - s.screen.cameraX,
-            this.y+CAT_HEIGHT/2 - s.screen.cameraY,
+            this.x - s.screen.cameraX - CAT_MARGIN_X,
+            this.y - s.screen.cameraY - CAT_MARGIN_Y,
             frame
         )
         b.SetScale( 1, 1)

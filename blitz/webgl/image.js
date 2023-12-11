@@ -38,16 +38,14 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
             frameHeight,
             frameCount : 1,
             texture,
+            /** @type{number[][]} */
             uvs : []
         }
 
         const image = new Image()
-
-        image.onload = function(){
-            console.log("carreguei "+imageName)
+        image.onload = function(){            
             result.width = image.width
             result.height = image.height
-
             if(frameWidth !== 0 && frameHeight !== 0){
                 let framesX =(result.width/frameWidth)|0
                 let framesY =(result.height/frameHeight)|0
@@ -55,26 +53,19 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
                 let uvh = 1 / framesY
                 result.frameCount = framesX * framesY
                 for(let y = 0; y < framesY; y++){
-                    for(let x = 0; x < framesX; x++){
-                        // @ts-expect-error
-                        // 1,1,
-                        // 0,1,
-                        // 1,0,
-                        // 0,0                        
+                    for(let x = 0; x < framesX; x++){                    
                         result.uvs.push([
-                            x * uvw,
-                            y * uvh,
-                            x * uvw + uvw,
-                            y * uvh + uvh
+                            x * uvw + uvw * 0.02,
+                            y * uvh + uvh * 0.02,
+                            x * uvw + uvw - uvw * 0.02,
+                            y * uvh + uvh - uvh * 0.02
                         ])
                     }
                 }
-                console.log(result.uvs)
             }else{
                 result.frameWidth = image.width
                 result.frameHeight = image.height
             }
-
             ctx.bindTexture(ctx.TEXTURE_2D,texture)
             ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.NEAREST)
             ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST)    
@@ -83,6 +74,7 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
             _imageMap.set(imageName, result)
 
             resolve(result)
+            console.log("carreguei "+imageName)
         }
         image.onerror = function(){
             reject("não consegui carregar " + imageName)
@@ -112,7 +104,7 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
     mat4.translate(
         modelViewMatrix,
         modelViewMatrix,
-        [x,y,0]
+        [x + imageHandler.frameWidth/2,y + imageHandler.frameHeight/2,0]
     )
     mat4.rotateZ(
         modelViewMatrix,
