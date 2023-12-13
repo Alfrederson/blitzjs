@@ -1,4 +1,5 @@
 import { IB2D, Preload } from "../blitz/blitz"
+import { constrain } from "./util"
 
 let nubSprite
 
@@ -6,22 +7,24 @@ Preload(async b => {
   nubSprite = await b.LoadImage("nub.png")
 })
 
+const NUB_SIZE = 128
+
 class Nub {
   x = 0
   y = 0
   dx = 0
   dy = 0
-  length = 32
+  length = NUB_SIZE * 0.25
   touch = -1
-  radius = 32
+  radius = NUB_SIZE / 2
   justReleased = false
   releasedX = 0
   releasedY = 0
   holdX = 0
   holdY = 0
   constructor(_x, _y) {
-    this.x = _x-16
-    this.y = _y-16
+    this.x = _x-NUB_SIZE/2
+    this.y = _y-NUB_SIZE/2
   }
   getX() {
     // x = quão longe ele tá do centro.
@@ -37,9 +40,7 @@ class Nub {
   render(b) {
     b.SetScale(1, 1)
     let angulo = Math.atan2(-this.dy , this.dx)
-    let length = Math.sqrt(this.dx*this.dx + this.dy*this.dy)
-    if(length > 32)
-      length = 32
+    let length = constrain( Math.sqrt(this.dx*this.dx + this.dy*this.dy), 0, NUB_SIZE*0.25)
 
     b.DrawImage(nubSprite,
       this.x + Math.cos(angulo)*length,
@@ -54,7 +55,8 @@ class Nub {
    * @returns {boolean}
    */
   touching(x, y) {
-    return (x >= this.x && x <= this.x+this.length) && (y >= this.y && y <= this.y + this.length)
+    return (x >= this.x && x <= this.x+NUB_SIZE) && 
+           (y >= this.y && y <= this.y+NUB_SIZE)
   }
   held(){
     return this.touch !== -1

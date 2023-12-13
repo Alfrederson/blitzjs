@@ -57,4 +57,23 @@ export default class {
         this.stuff[0] = undefined
     }
 
+    [Symbol.iterator](){
+        return{
+            pointer: 0,
+            data : this.stuff,
+            length: this.top,
+            next(){
+                if(this.pointer < this.length ){
+                    return{
+                        index: this.pointer,
+                        value: this.data[this.pointer++],
+                        done: false
+                    }
+                }else{
+                    return { done: true }
+                }
+            }
+        }
+    }
+
 }

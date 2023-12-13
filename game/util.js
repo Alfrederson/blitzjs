@@ -29,10 +29,37 @@ function rectsIntersect(rectA, rectB, out){
     out[H] = Math.min(rectA[Y] + rectA[H], rectB[Y] + rectB[H]) - out[Y]
 
     return true
+}
 
+/**
+ * joga uma moeda.
+ * @returns {number} 1 se for cara, 0 se for coroa.
+ */
+function coin(){
+    return Math.random() > 0.5 ? 1 : 0
+}
+/**
+ * joga um dado.
+ * @param {number} sides 
+ * @returns {number} entre 0 e sides.
+ */
+function dice(sides){
+    return (Math.random() * sides)|0
+}
+
+/**
+ * diferença absoluta entre dois numeros.
+ * @param {number} a 
+ * @param {number} b 
+ */
+function diff(a,b){
+    return a > b ? a-b : b-a
 }
 
 export {
     constrain, 
-    rectsIntersect
+    rectsIntersect,
+    diff,
+    dice,
+    coin
 }

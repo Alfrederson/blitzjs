@@ -35,12 +35,11 @@ class CatGame {
   touchMoveHandler
   touchEndHandler
   gato = new Gato()
-  nubWalk = new Nub(64, SCREEN_HEIGHT/2)
-  nubJump = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT/2)
-  nubHang = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT/2 - 96)
+  nubWalk = new Nub(64, SCREEN_HEIGHT * 0.75)
+  nubJump = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT * 0.75)
 
   setupInput() {
-    const nubs = [this.nubWalk, this.nubJump, this.nubHang]
+    const nubs = [this.nubWalk, this.nubJump]
     // gatinho começa a andar
     this.touchStartHandler = OnTouchStart(touches => {
       for (let i = 0; i < touches.length; i++) {
@@ -107,8 +106,6 @@ class CatGame {
         }
       }
     }
-
-
   }
 
   /** @param {IB2D} b */
@@ -125,7 +122,7 @@ class CatGame {
       this.gato.pounce(-0.3 * this.nubJump.releasedX, -0.3 * this.nubJump.releasedY)
     }
     // se pendurando
-    if (this.nubHang.held()){
+    if (this.gato.touchingLedge && this.nubJump.held()){
       this.gato.hang()
     }
 
@@ -139,9 +136,6 @@ class CatGame {
     this.nubJump.render(b)
     this.nubWalk.render(b)
 
-    if(this.gato.touchingLedge){
-      this.nubHang.render(b)
-    }
   }
 
 }

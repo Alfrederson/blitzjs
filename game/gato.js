@@ -2,21 +2,15 @@ import {
     IB2D,
     Preload
 } from "../blitz/blitz";
-import {
-    OnTouchStart,
-    OnTouchMove,
-    OnTouchEnd,
 
-    ClearTouchStart,
-    ClearTouchMove,
-    ClearTouchEnd
-} from "../blitz/input"
 import { GameState } from "../game_state"
 import { FILTRO_BEIRA, FILTRO_SOLIDO } from "./tileMap";
 import { constrain } from "./util";
 
-let sprite
 
+import * as pombo from "./pombo.js"
+
+let sprite
 
 Preload( async b =>{
     sprite = await b.LoadAnimImage("gato.png",64,64)
@@ -37,6 +31,7 @@ class Gato {
     hanging = false
     touchingLedge = false
     jumping = false
+    hasPigeon = false
     
     x = 128
     y = 64
@@ -94,7 +89,6 @@ class Gato {
      * @param {GameState} s
      */
     update (s){
-
         // movimentos felinos
         
         let out = [0,0,0,0]
@@ -154,6 +148,9 @@ class Gato {
         }else{
             this.touchingLedge = false
         }
+
+
+
     }
     /**
      * @param {IB2D} b
