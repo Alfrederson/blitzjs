@@ -60,10 +60,10 @@ class TileMap {
      * @param {GameState} s
      */
     render (b,s){
-        let fromX = (s.screen.cameraX / TILE_WIDTH)|0
-        let toX = fromX + (s.screen.width / TILE_WIDTH)|0
-        let fromY = (s.screen.cameraY / TILE_WIDTH)|0
-        let toY = fromY + (s.screen.height / TILE_HEIGHT)|0
+        let fromX = Math.floor(s.screen.cameraX / TILE_WIDTH)
+        let toX = fromX + Math.ceil(s.screen.width / TILE_WIDTH)
+        let fromY = Math.floor(s.screen.cameraY / TILE_WIDTH)
+        let toY = fromY + Math.ceil(s.screen.height / TILE_HEIGHT)
 
         fromX = constrain(fromX,0,this.width)
         toX = constrain(toX+1,0,this.width)

@@ -24,8 +24,8 @@ import { Gato } from "./game/gato.js"
 import { Nub } from "./game/nub.js"
 import { Pombo } from "./game/pombo.js"
 
-const SCREEN_WIDTH = 800
-const SCREEN_HEIGHT = 800/1.777
+const SCREEN_WIDTH = 880
+const SCREEN_HEIGHT = 480
 
 
 /** @implements {IApp} */
@@ -61,6 +61,7 @@ class CatGame {
           this.nubWalk.move(x,y)
           this.nubWalk.dy = 0
         }
+        // pulo
         if (n == this.nubJump.touch) {
           this.nubJump.move(x,y)
         }

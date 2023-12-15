@@ -83,6 +83,8 @@ function init(ctx,width, height){
         targetTex,
         level // level
     )
+
+    console.log(texWidth,texHeight)
     
     return {
         fb,
@@ -102,18 +104,14 @@ function init(ctx,width, height){
 function begin(ctx, targetTex){
     ctx.bindFramebuffer( ctx.FRAMEBUFFER, targetTex.fb )
     ctx.bindTexture( ctx.TEXTURE_2D, targetTex.tex )
-    ctx.viewport(0,0, targetTex.texWidth, targetTex.texHeight)
+    ctx.viewport(0,0, targetTex.width, targetTex.height)
 }
 
 /**
  * @param {WebGLRenderingContext} ctx 
  * @param {RenderTarget} targetTex 
  */
-
-let frame = 0
-
 function end(ctx, programInfo, targetTex){
-
     ctx.bindFramebuffer(ctx.FRAMEBUFFER, null)
     ctx.bindTexture(ctx.TEXTURE_2D,targetTex.tex)
     ctx.viewport(0,0,ctx.canvas.width,ctx.canvas.height)
@@ -122,19 +120,18 @@ function end(ctx, programInfo, targetTex){
     mat4.translate(
         modelViewMatrix,
         modelViewMatrix,
-        [targetTex.width/2,targetTex.height/2,1]
+        [targetTex.texWidth/2,targetTex.height-targetTex.texHeight/2,1]
     )
     mat4.scale(
         modelViewMatrix,
         modelViewMatrix,
-        [targetTex.width + Math.cos(frame)*2,-targetTex.height,1]
+        [targetTex.texWidth,-targetTex.texHeight,1]
     )
     ctx.uniformMatrix4fv(
         programInfo.uniformLocations.modelViewMatrix,
         false, // transpose
         modelViewMatrix
     )
-
     ctx.uniform4fv(
         programInfo.uniformLocations.drawColor,
         [1,1,1,1]

@@ -218,8 +218,7 @@ class WGL_B2D {
         )
 
         this.projectionMatrix = mat4.create()
-        mat4.ortho(this.projectionMatrix,0,width,height,0,-1,1)    
-
+        mat4.ortho(this.projectionMatrix,0,width,height,0,-500,500)    
         this.ctx.useProgram( this.programInfo.program )
         
         // usa aquela matriz de projeção ortogonal uma vez só
