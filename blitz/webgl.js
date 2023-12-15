@@ -3,9 +3,11 @@ import { IB2D, IImage } from "./blitz"
 
 import { vsSource, fsSource, initShaderProgram, loadShader } from "./webgl/shader"
 
+
+
 import * as image from "./webgl/image"
 import * as draw from "./webgl/draw"
-
+import * as rtt from "./webgl/texrender"
 /**
  * WebGL program with attribute and uniform locations.
  * @typedef {Object} WebGLProgramInfo
@@ -87,6 +89,9 @@ function setTextureCoordAttribute(ctx,buffers,programInfo,uv){
     )
 }
 
+
+
+
 /** @implements {IB2D} */
 class WGL_B2D {
     /** @type {boolean} */
@@ -94,6 +99,9 @@ class WGL_B2D {
 
     /** @type {WebGLRenderingContext} */
     ctx
+
+    /** @type {import("./webgl/texrender").RenderTarget} */
+    renderTarget
 
     /** @type {WebGLProgram|null} */
     shaderProgram = null
@@ -232,6 +240,8 @@ class WGL_B2D {
             this.ctx?.viewport(0,0, this.ctx.canvas.width, this.ctx.canvas.height)
         })
 
+        this.renderTarget = rtt.init(ctx,width,height)
+
         this.initialized=true
     }
     /**
@@ -346,6 +356,23 @@ class WGL_B2D {
     DrawText(text,x,y){
 
     }
+
+    /**
+     * @param {(arg0: IB2D) => void} callback
+     */
+    Draw( callback ){
+        rtt.begin(
+            this.ctx,
+            this.renderTarget
+        )
+        callback( this )
+        rtt.end(
+            this.ctx,
+            this.programInfo,
+            this.renderTarget
+        )
+    }
+
 
 }
 

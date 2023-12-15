@@ -10,6 +10,13 @@ class IB2D{
     Graphics(width,height,elementId){}
 
     /**
+     * 
+     * @param {function(IB2D):void} callback 
+     */
+    Draw(callback){}
+
+
+    /**
      * Limpa a tela com a cor especificada.
      * @param {number} r 
      * @param {number} g 
@@ -132,9 +139,17 @@ const _preloadFunctions = []
  */
 
 async function Start(game, b2d){
+
+    const drawer = i => game.draw(i)
     
     function draw(){
-        game.draw(b2d)        
+        /**
+         * Ou:
+         * 
+         * b2d.Draw( game.draw )
+         */
+
+        b2d.Draw( drawer ) 
         requestAnimationFrame(draw)
     }
 

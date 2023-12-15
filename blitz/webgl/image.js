@@ -55,10 +55,10 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
                 for(let y = 0; y < framesY; y++){
                     for(let x = 0; x < framesX; x++){                    
                         result.uvs.push([
-                            x * uvw + uvw * 0.02,
-                            y * uvh + uvh * 0.02,
-                            x * uvw + uvw - uvw * 0.02,
-                            y * uvh + uvh - uvh * 0.02
+                            x * uvw,
+                            y * uvh,
+                            x * uvw + uvw,
+                            y * uvh + uvh
                         ])
                     }
                 }
@@ -67,7 +67,7 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
                 result.frameHeight = image.height
             }
             ctx.bindTexture(ctx.TEXTURE_2D,texture)
-            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.NEAREST)
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.LINEAR)
             ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST)    
             ctx.texImage2D(ctx.TEXTURE_2D,0,ctx.RGBA,ctx.RGBA,ctx.UNSIGNED_BYTE,image)
 
@@ -85,7 +85,6 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
 
 
 let oldImage
-let oldTextCoord
 /**
  * 
  * @param {WebGLRenderingContext} ctx 
@@ -123,21 +122,18 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
         oldImage = imageHandler.texture
     }
 
-    // escala e posiciona o quadradinho
+    // muda esse campo do shader pra essa matrix
     ctx.uniformMatrix4fv(
         programInfo.uniformLocations.modelViewMatrix,
         false, // transpose
         modelViewMatrix
     )
-
     // cor
     ctx.uniform4fv(
         programInfo.uniformLocations.drawColor,
         color
     )
-
     ctx.uniform1i(programInfo.uniformLocations.uSampler,0)
-
     ctx.drawArrays(
         ctx.TRIANGLE_STRIP,
         0, // offset
