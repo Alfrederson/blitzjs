@@ -1,14 +1,14 @@
 import { 
     IB2D,
     Preload
-} from "../blitz/blitz";
+} from "../../blitz/blitz.js";
 
-import { GameState } from "../game_state"
-import { FILTRO_BEIRA, FILTRO_SOLIDO } from "./tileMap";
-import { constrain } from "./util";
+import { GameState } from "../../game_state.js"
+import { FILTRO_BEIRA, FILTRO_SOLIDO } from "../tileMap.js";
+import { constrain } from "../util.js";
 
 
-import * as pombo from "./pombo.js"
+import * as pombo from "../pombo/pombo.js"
 
 let sprite
 
@@ -26,6 +26,9 @@ const CAT_MARGIN_X = (CAT_FRAME_WIDTH-CAT_WIDTH)/2
 const CAT_MARGIN_Y = (CAT_FRAME_HEIGHT-CAT_HEIGHT)/2
 
 class Gato {
+
+    /** @type {Gato|undefined} */
+    static gatoGlobal
 
     grounded = false
     hanging = false
@@ -48,6 +51,10 @@ class Gato {
 
     touchingMap = -1
 
+
+    constructor(){
+        Gato.gatoGlobal = this
+    }
 
     /**
      * @param {number} speed 
@@ -164,12 +171,15 @@ class Gato {
             frame = 2
 
         b.SetScale( this.side ,1)
+        b.SetColor(1,1,1,1)
+        b.SetAngle(0)
+
         b.DrawImageFrame(sprite,
             this.x - s.screen.cameraX - CAT_MARGIN_X,
             this.y - s.screen.cameraY - CAT_MARGIN_Y,
             frame
         )
-        b.SetScale( 1, 1)
+
     }
 
 }

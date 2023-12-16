@@ -1,13 +1,17 @@
-import { IB2D, Preload } from "../blitz/blitz"
-import { GameState } from "../game_state"
-import { Gato } from "./gato"
-import { FILTRO_SOLIDO } from "./tileMap"
-import { coin, constrain, dice, diff } from "./util"
+import { IB2D, Preload } from "../../blitz/blitz"
+import { GameState } from "../../game_state"
+import { Gato } from "../gato/gato"
+import { Pena } from "./pena"
+import { FILTRO_SOLIDO } from "../tileMap"
+import { coin, constrain, dice, diff } from "../util"
+
+
+import { ANIMATION_CYCLE, ANIMATION_PING_PONG, Animation } from "../animation"
 
 let sprite
 
 Preload( async b =>{
-    sprite = await b.LoadImage("fakePombo.png")
+    sprite = await b.LoadAnimImage("fakePombo.png",32,32)
 })
 
 const PARADO = 0
@@ -16,12 +20,6 @@ const FUGINDO = 2
 const VOANDO = 3
 const POUSANDO = 4
 
-const estados = [
-    "parado",
-    "fugindo",
-    "voando",
-    "pousando"
-]
 
 const POMBO_WIDTH = 32
 const POMBO_HEIGHT = 32
@@ -42,52 +40,60 @@ class Pombo {
     sy = 0
     timer = 0
 
+    animFrame = 0
+
     // blerg
 
     /** @type {Gato} */
     static gato
 
-    /** @param {GameState} s */
-    static procurarOGato(s){
-        return Pombo.gato ?? (
-            ()=>{
-                for(let obj of s._alives)
-                    if(obj instanceof Gato)
-                        return obj
-                // caso o pombo seja "Instanciado" sem nenhum gato na tela, ele vai tentar
-                // fugir do ponto 0,0
-                return {
-                    x : 0,
-                    y : 0,
-                    sx : 0
-                }
-            }
-        )()
-    }
+    /** @type {Animation} */
+    animFly
 
+    /** @type {Animation} */
+    animWalk
+
+
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
     constructor(x,y){
         this.x = x
         this.y = y
+
+        // animação de vôo
+        this.animFly = new Animation({ frameCount: 2, frameDelay: 3, type: ANIMATION_PING_PONG, baseFrame: 1 })
+        this.animWalk = new Animation({ frameCount: 4, frameDelay: 4, type: ANIMATION_CYCLE, baseFrame: 4 })
     }
+
+    /**
+     * @param {number} s
+     */
+    setState(s){
+        this.state = s
+        this.timer = 0
+    }
+
     /** @param {GameState} s */
     update(s){
         // esse pombo tem que parecer um pombo.
+        // QUE LOUCURA TÁ ISSO
         switch(this.state){
             case PARADO:
                 if(this.timer++ >= 120){
                     this.timer = 0
-                    let num = dice(3)
+                    let num = dice(4)
                     switch(num){
-                        case 0:
-                            if (coin()){
-                                this.state = ANDANDO
-                                this.willWalkFor = dice(3) * 10
-                                this.sx = coin() ? 2 : -2    
-                            }        
-                        break;
                         case 1:
-                            this.state = FUGINDO
-                            this.sx = coin() ? 1 : -1
+                            this.setState(ANDANDO)
+                            this.willWalkFor = dice(3) * 50
+                            this.sx = coin() ? 1 : -1        
+                        break;
+                        case 2:
+                            this.setState(FUGINDO)
+                            this.sx = coin() ? 2 : -2
                         break;
                         default:
                             // .......
@@ -95,9 +101,10 @@ class Pombo {
                 }
             break;
             case ANDANDO:
+                
                 if(++this.timer >= this.willWalkFor){
-                    this.timer = 0
-                    this.state = PARADO;
+                    this.setState(PARADO)
+                    this.sx = 0
                 }
             break;
             case POUSANDO:
@@ -111,43 +118,43 @@ class Pombo {
                     this.timer = 0 
                 }
                 if(this.grounded){
-                    this.state = PARADO
+                    this.setState(PARADO)
                     this.sx = 0.0                    
-                    this.timer = 0
                 }
             break;
             case VOANDO:
                 this.sy = Math.sin(this.flightTime+=0.1)
                 if(++this.timer >= this.willFlyFor || this.ceiled){
-                    this.timer = 0
-                    this.state = POUSANDO
+                    this.setState(POUSANDO)
                 }
                 if(this.grounded){
-                    this.state = PARADO
-                    this.timer = 0 
+                    this.setState(PARADO)
                     this.sx = 0
                 }            
             break;
             case FUGINDO:
+                // solta peninhas
+                if(dice(50)==2){
+                    s.spawn(new Pena({x:this.x,y:this.y, sy: -2 *Math.random(), sx:-2 + Math.random()*2}))
+                }
                 // se não fizer isso, ele vai estar "grounded", e quando
                 // ele está grounded, o estado dele muda pra parado
                 // caso ele esteja no ar.
                 this.sy -= 0.3
                 if(this.ceiled){
-                    this.state = POUSANDO
-                    this.timer = 0
+                    this.setState(POUSANDO)
                     break;
                 }
                 if(++this.timer >= 60){
-                    this.timer = 0
-                    this.state = VOANDO
+                    this.setState(VOANDO)
                     this.sy = 0
                     this.willFlyFor = (5 + dice(5))*60
                 }
             break;
         }
 
-
+        this.animFly.update()
+        this.animWalk.update()
 
         this.sy += 0.2
         this.y += this.sy
@@ -180,17 +187,21 @@ class Pombo {
 
         // foge do gato
         if(this.state == PARADO || this.state == ANDANDO){
-            let gato = Pombo.procurarOGato(s)
-            if( diff(this.x, gato.x) < 128 &&
-                diff(this.y, gato.y) < 128 && 
-                Math.abs( gato.sx ) >= 4){
-                this.state = FUGINDO
-                this.timer = 0
-                this.willFlyFor = 0
-                this.sy = 0
-                // gato ta na direita, vou pra esquerda
-                this.sx = gato.x > this.x ? -3 : 3
-            }    
+            // No geral não é legal fazer isso!!!!!!!!
+            // tem que dar um jeito de fazer esse "gato" ser apenas uma coisa amedrontadora no geral
+            let gato = Gato.gatoGlobal
+            if(gato){
+                if( diff(this.x, gato.x) < 128 &&
+                    diff(this.y, gato.y) < 128 && 
+                    Math.abs( gato.sx ) >= 4){
+                    this.state = FUGINDO
+                    this.timer = 0
+                    this.willFlyFor = 0
+                    this.sy = 0
+                    // gato ta na direita, vou pra esquerda
+                    this.sx = gato.x > this.x ? -3 : 3                
+                }    
+            }
         }
         // acelera
         if(this.state == VOANDO ||
@@ -204,10 +215,34 @@ class Pombo {
      * @param {GameState} s
      */
     render(b,s){
-        b.SetScale(1,1)
-        b.DrawImage(sprite,
+        b.SetScale(this.sx > 0 ? 1 : -1,1)
+        b.SetAngle(0)
+        b.SetColor(1,1,1,1)    
+
+        let frame=0
+        switch(this.state){
+            case PARADO:
+                if(this.grounded)
+                    frame = 0
+                else
+                    frame = 2
+                break;
+            case ANDANDO:
+                frame = this.animWalk.frame
+                break;
+            case FUGINDO:
+            case VOANDO:
+            case POUSANDO:
+                frame = this.animFly.frame
+                break;    
+            default:
+                frame =0
+        }
+
+        b.DrawImageFrame(sprite,
             this.x - s.screen.cameraX,
-            this.y - s.screen.cameraY
+            this.y - s.screen.cameraY,
+            frame
         )
     }
 }

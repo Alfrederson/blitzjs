@@ -2,37 +2,28 @@ import { IB2D, Preload } from "../blitz/blitz"
 import { GameState } from "../game_state"
 import { constrain, rectsIntersect } from "./util"
 
-const tilesTxt = `
-1111111111111111111111111111111111111111
-1                                      1
-1                                      1
-1                                      1
-1                                      1
-1                                      1
-1                                      1
-1 112               2112          211111
-1                                      1
-1                                      1
-1  2112           2112              2111
-1                                      1
-1                                      1
-1111112   21111111111              21111
-111111     1111111111               1111
-1111111111111111111111111111111111111111
-1111111111111111111111111111111111111111
-1111111111111111111111111111111111111111
-`.trim()
+
 
 let tileset
 
-const FILTRO_SOLIDO    = 0b0000_0001
-const FILTRO_BEIRA     = 0b0000_0010
-const FILTRO_INVISIVEL = 0b0000_0100
+const NADA      = 0
+const SOLIDO    = 0b0000_0001
+const BEIRA     = 0b0000_0010
+const INVISIVEL = 0b0000_0100
 // [sólido, beirada]
 const tileInfo = [
-    FILTRO_INVISIVEL,
-    FILTRO_SOLIDO,
-    FILTRO_BEIRA | FILTRO_INVISIVEL
+    INVISIVEL,   // 0
+    SOLIDO,
+    BEIRA | INVISIVEL,
+    SOLIDO,
+    SOLIDO,
+    SOLIDO,
+    SOLIDO,
+    SOLIDO,
+    NADA,
+    SOLIDO,
+    SOLIDO,
+    SOLIDO
 ]
 
 const TILE_WIDTH = 32
@@ -43,17 +34,25 @@ Preload(async b => {
 })
   
 class TileMap {
-    tiles = tilesTxt.split("\n").map(
-        line => line.split("").map(
-            letra => letra == " " ? 0 : parseInt(letra)
-        )
-    )
+    tiles= [[0]]
 
-    width = 0
-    height = 0
-    constructor(){
-        this.height = this.tiles.length
+    /**
+     * @param {string} from
+     */
+    Load(from){
+        this.tiles = from.split("\n").map(
+            line => line.split("").map(
+                letra => letra == " " ? 0 : parseInt(letra)
+            )
+        )
         this.width = this.tiles[0].length
+        this.height = this.tiles.length
+    }
+
+    width = 1
+    height = 1
+    constructor(){
+
     }
     /**
      * @param {IB2D} b 
@@ -70,9 +69,13 @@ class TileMap {
         fromY = constrain(fromY,0,this.height)
         toY = constrain(toY+1,0,this.height)
 
+        b.SetScale( 1 ,1)
+        b.SetColor(1,1,1,1)
+        b.SetAngle(0)        
+
         for(let y = fromY; y < toY; y++){
             for(let x = fromX; x < toX; x++){
-                if(!(tileInfo[this.tiles[y][x]] & FILTRO_INVISIVEL)){
+                if(!(tileInfo[this.tiles[y][x]] & INVISIVEL)){
                     b.DrawImageFrame(
                         tileset,
                         x*TILE_WIDTH - s.screen.cameraX,
@@ -128,6 +131,6 @@ class TileMap {
 export {
     TileMap,
     tileInfo,
-    FILTRO_BEIRA,
-    FILTRO_SOLIDO
+    BEIRA as FILTRO_BEIRA,
+    SOLIDO as FILTRO_SOLIDO
 }

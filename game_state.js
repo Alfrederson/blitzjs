@@ -1,6 +1,7 @@
 import {
     IB2D,
 } from "./blitz/blitz.js"
+import { Gato } from "./game/gato/gato.js"
 
 import { TileMap } from "./game/tileMap.js"
 import { constrain } from "./game/util.js"
@@ -18,6 +19,12 @@ const MAX_THINGS = 500
  */
 
 /**
+ * @typedef {Object} IPosition
+ * @property {number} x
+ * @property {number} y
+ */
+
+/**
  * @typedef {Object} IGameThing
  * @property {boolean} dead - se for verdadeiro, vai remover o objeto.
  * @property {UpdateMethod} update - Atualiza.
@@ -27,18 +34,23 @@ const MAX_THINGS = 500
 
 class GameState {
 
+
+
     screen = {
         width : 0,
         height : 0,
 
         cameraX : 0,
-        cameraY : 0
+        cameraY : 0,
+
+        /** @type {IPosition} */
+        target : {x:0,y:0}
     }
 
     // faz a "câmera" olhar pra uma posição x/y no espaço.
     lookAt(x,y){
-        let dx = x - this.screen.cameraX
-        let dy = y - this.screen.cameraY
+        let dx = x - this.screen.cameraX - this.screen.width/2
+        let dy = y - this.screen.cameraY - this.screen.height/2
 
         if (Math.abs(dx) <= 1)
             dx = 0
@@ -59,6 +71,8 @@ class GameState {
         )
     }
 
+
+
     tileMap = new TileMap()
 
     /** @type {Stack<IGameThing>} */
@@ -69,6 +83,10 @@ class GameState {
 
     ticks = 60
 
+    reset(){
+        this._alives.reset()
+    }
+
     /** @param {IGameThing} what */
     spawn(what) {
         this._alives.push(what)
@@ -77,6 +95,11 @@ class GameState {
     /** @param {IGameThing} what */
     kill(what) {
         what.dead = true
+    }
+
+    /** @param {IPosition} target */
+    setTarget( target ){
+        this.screen.target = target
     }
 
     update() {
@@ -95,6 +118,9 @@ class GameState {
                 this._scene.forget(i)
             }
         }
+
+        // lookat
+        this.lookAt(this.screen.target.x, this.screen.target.y)
 
         // troca as pilhas
         let tmp = this._scene

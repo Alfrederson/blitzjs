@@ -1,4 +1,5 @@
 import { IB2D, Preload } from "../blitz/blitz"
+import { GameState } from "../game_state"
 import { constrain } from "./util"
 
 let nubSprite
@@ -10,6 +11,7 @@ Preload(async b => {
 const NUB_SIZE = 128
 
 class Nub {
+  dead = false
   x = 0
   y = 0
   dx = 0
@@ -37,7 +39,7 @@ class Nub {
   /** 
    * @param {IB2D} b - B2D
    * */
-  render(b) {
+  renderUi(b) {
     b.SetScale(1, 1)
     let angulo = Math.atan2(-this.dy , this.dx)
     let length = constrain( Math.sqrt(this.dx*this.dx + this.dy*this.dy), 0, NUB_SIZE*0.25)
@@ -50,6 +52,12 @@ class Nub {
 
   /**
    * 
+   * @param {GameState} s 
+   */
+  update(s){
+  }
+
+  /**
    * @param {number} x 
    * @param {number} y 
    * @returns {boolean}

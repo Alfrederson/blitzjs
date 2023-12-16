@@ -272,13 +272,29 @@ class WGL_B2D {
     }
 
     /**
+     * @param {number} r
+     * @param {number} g
+     * @param {number} b
+     * @param {number} a
+     */
+    SetColor(r,g,b,a){
+        this.drawColor[0] = r
+        this.drawColor[1] = g
+        this.drawColor[2] = b
+        this.drawColor[3] = a
+    }
+
+    /**
      * @param {image.IWGLImage} imageHandler
      * @param {number} x
      * @param {number} y
      */
     DrawImage(imageHandler, x, y){
-        if(!this.initialized)
-            throw "contexto não inicializado"
+        // a gente precisa disso?
+        // será que não faz mais sentido usar algum construtor que só produza o WGL_B2D inteiro caso
+        // todas as partes móveis estejam presentes?
+        // if(!this.initialized)
+        //     throw "contexto não inicializado"
         
         if((this.lastImage !== imageHandler) || (this.lastFrame !== 0)){
             this.lastImage = imageHandler

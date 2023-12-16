@@ -103,32 +103,27 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
     mat4.translate(
         modelViewMatrix,
         modelViewMatrix,
-        [(x + imageHandler.frameWidth/2)|0,(y + imageHandler.frameHeight/2)|0,0]
+        [(x + imageHandler.frameWidth/2),(y + imageHandler.frameHeight/2),0]
     )
     mat4.rotateZ(
         modelViewMatrix,
         modelViewMatrix,
         rotation,
     )
-    // escala pra deixar no tamanho da imagem...
     mat4.scale(
         modelViewMatrix,
         modelViewMatrix,
         [imageHandler.frameWidth * scaleX,imageHandler.frameHeight * scaleY,1]
     )
-
     if(oldImage !== imageHandler.texture){
         ctx.bindTexture(ctx.TEXTURE_2D,imageHandler.texture)
         oldImage = imageHandler.texture
     }
-
-    // muda esse campo do shader pra essa matrix
     ctx.uniformMatrix4fv(
         programInfo.uniformLocations.modelViewMatrix,
         false, // transpose
         modelViewMatrix
     )
-    // cor
     ctx.uniform4fv(
         programInfo.uniformLocations.drawColor,
         color

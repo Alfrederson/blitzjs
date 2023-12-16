@@ -83,6 +83,16 @@ class IB2D{
      * @param {number} y
      */
     SetScale(x,y){}
+
+
+    /**
+     * 
+     * @param {number} r 
+     * @param {number} g 
+     * @param {number} b 
+     * @param {number} a 
+     */
+    SetColor(r,g,b,a){}
 }
 
 /** @interface */
@@ -97,11 +107,13 @@ class IImage {
 
 /**
  * Inicializa um "objeto" com propriedades específicas.
- * @param {object} x 
+ * @template T
+ * @param {T} x 
  * @param {object|undefined} properties 
- * @returns 
+ * @returns T
  */
 function make(x, properties){
+    // @ts-ignore
     x.initialize && x.initialize()
 
     if(properties){

@@ -105,6 +105,8 @@ function begin(ctx, targetTex){
     ctx.bindFramebuffer( ctx.FRAMEBUFFER, targetTex.fb )
     ctx.bindTexture( ctx.TEXTURE_2D, targetTex.tex )
     ctx.viewport(0,0, targetTex.width, targetTex.height)
+
+    ctx.clear( ctx.COLOR_BUFFER_BIT  | ctx.DEPTH_BUFFER_BIT )
 }
 
 /**

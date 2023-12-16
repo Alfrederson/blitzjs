@@ -8,7 +8,10 @@ const input = {
     canvasElement : null,
 
     width : 0,
-    height : 0
+    height : 0, 
+
+    /** @type {{event:string, handler: function}[]} */
+    currentListeners : []
 }
 
 /**
@@ -114,6 +117,8 @@ function toTouchEndHandler(handler){
 function OnTouchStart( handler ){
     const touchHandler = toTouchHandler( handler )
     input.canvasElement?.addEventListener( "touchstart", touchHandler)
+
+    input.currentListeners.push( {event: "touchstart", handler: touchHandler } )
     return touchHandler
 }
 /**
@@ -123,6 +128,8 @@ function OnTouchStart( handler ){
 function OnTouchMove( handler ){
     const touchHandler = toTouchHandler( handler )
     input.canvasElement?.addEventListener( "touchmove", touchHandler)
+
+    input.currentListeners.push( {event: "touchmove", handler: touchHandler } )
     return touchHandler
 }
 /**
@@ -132,6 +139,8 @@ function OnTouchMove( handler ){
 function OnTouchEnd( handler ){
     const touchHandler = toTouchEndHandler( handler )
     input.canvasElement?.addEventListener( "touchend", touchHandler)
+
+    input.currentListeners.push( {event: "touchend", handler: touchHandler } )
     return touchHandler
 }
 
@@ -152,6 +161,13 @@ function ClearTouchMove( handler ){
  */
 function ClearTouchEnd( handler ){
     input.canvasElement?.removeEventListener("touchend",handler)
+}
+
+function ClearAll(){
+    for(let l of input.currentListeners){
+        /** @ts-expect-error */
+        input.canvasElement?.removeEventListener( l.event, l.handler )
+    }
 }
 
 
@@ -190,4 +206,6 @@ export {
     ClearTouchStart,
     ClearTouchMove,
     ClearTouchEnd,
+
+    ClearAll
 }

@@ -20,125 +20,53 @@ import {
 
 import { GameState } from "./game_state"
 
-import { Gato } from "./game/gato.js"
-import { Nub } from "./game/nub.js"
-import { Pombo } from "./game/pombo.js"
+import * as flags from "./game/flags.js"
 
-const SCREEN_WIDTH = 880
-const SCREEN_HEIGHT = 480
+import { Gato } from "./game/gato/gato.js"
+import { Nub } from "./game/nub.js"
+import { Pombo } from "./game/pombo/pombo.js"
+
+import * as Level0 from "./game/levels/0/level.js"
+
+
+import {
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT
+} from "./config.js"
 
 
 /** @implements {IApp} */
 class CatGame {
   gameState = new GameState()
-  touchStartHandler
-  touchMoveHandler
-  touchEndHandler
-  gato = new Gato()
-  nubWalk = new Nub(64, SCREEN_HEIGHT * 0.75)
-  nubJump = new Nub(SCREEN_WIDTH - 64, SCREEN_HEIGHT * 0.75)
-
-  setupInput() {
-    const nubs = [this.nubWalk, this.nubJump]
-    // gatinho começa a andar
-    this.touchStartHandler = OnTouchStart(touches => {
-      for (let i = 0; i < touches.length; i++) {
-        let { x, y, n } = touches[i];
-        for(let nub of nubs){
-          if(nub.touching(x,y)){
-            nub.press(x,y,n)
-            continue
-          }
-        }
-      }
-    })
-
-    this.touchMoveHandler = OnTouchMove(touches => {
-      for (let i = 0; i < touches.length; i++) {
-        // direção do gatinho
-        let { x, y, n } = touches[i]
-        if (n == this.nubWalk.touch) {
-          this.nubWalk.move(x,y)
-          this.nubWalk.dy = 0
-        }
-        // pulo
-        if (n == this.nubJump.touch) {
-          this.nubJump.move(x,y)
-        }
-      }
-    })
-
-    this.touchEndHandler = OnTouchEnd(touches => {
-      for (let i = 0; i < touches.length; i++) {
-        for(let nub of nubs){
-          if(touches[i].n == nub.touch){
-            nub.release()
-          }
-        }
-      }
-    })
-  }
 
   /** @param {IB2D} b */
   setup(b) {
+    b.Graphics(SCREEN_WIDTH, SCREEN_HEIGHT, "game")
+    AttachInput(SCREEN_WIDTH, SCREEN_HEIGHT, "game")
 
-    this.gameState.screen = {
-      width: SCREEN_WIDTH,
-      height: SCREEN_HEIGHT,
-      cameraX: SCREEN_WIDTH / 2,
-      cameraY: SCREEN_HEIGHT / 2
-    }
+    this.gameState.screen.width = SCREEN_WIDTH
+    this.gameState.screen.height = SCREEN_HEIGHT
 
-    const { width, height } = this.gameState.screen
-
-    b.Graphics(width, height, "game")
-    AttachInput(width, height, "game")
-
-    this.setupInput()
-
-    this.gameState.spawn( this.gato )
- 
-    for(let x = 0; x < this.gameState.tileMap.width; x++){
-      for(let y = 0; y < this.gameState.tileMap.height-1; y++){
-        if(this.gameState.tileMap.tiles[y][x] == 0 && this.gameState.tileMap.tiles[y+1][x]!==0){
-          if(Math.random()>=0.85){
-            this.gameState.spawn( new Pombo(x * 32 + 16, y * 32 + 16))
-          }
-        }
-      }
-    }
+    Level0.Load( this.gameState )
   }
 
   /** @param {IB2D} b */
   draw(b) {
-
-    // movimento normal
-    if (this.nubWalk.touch !== -1) {
-      this.gato.walk(this.nubWalk.getX())
-    } else {
-      this.gato.stop()
-    }
-    // pulando
-    if (this.nubJump.released()) {
-      this.gato.pounce(-0.3 * this.nubJump.releasedX, -0.3 * this.nubJump.releasedY)
-    }
-    // se pendurando
-    if (this.gato.touchingLedge && this.nubJump.held()){
-      this.gato.hang()
-    }
-
     this.gameState.update()
-    b.Cls(255,255,255)
-
-    this.gameState.lookAt( this.gato.x - SCREEN_WIDTH/2, this.gato.y - SCREEN_HEIGHT/2 )
-       
     this.gameState.render(b)
-
-    this.nubJump.render(b)
-    this.nubWalk.render(b)
-
   }
-
 }
 
+
+flags.Load()
+
+console.log("Cleared levels: ")
+console.log(flags.flags.clearedLevels)
+
+
 Start(new CatGame(), new WGL_B2D())
+
+export {
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT
+}
