@@ -62,6 +62,14 @@ class IB2D{
      */
     DrawImage(imageHandler,x,y){}
 
+
+    /**
+     * Define a posição da câmera imaginária.
+     * @param {number} x 
+     * @param {number} y 
+     */
+    SetCamera(x,y){}
+
     /**
      * Desenha um frame de uma imagem.
      * @param {IImage} imageHandler

@@ -33,9 +33,6 @@ const MAX_THINGS = 500
  */
 
 class GameState {
-
-
-
     screen = {
         width : 0,
         height : 0,
@@ -81,10 +78,9 @@ class GameState {
     /** @type {Stack<IGameThing>} */
     _alives = new Stack(MAX_THINGS)
 
-    ticks = 60
-
     reset(){
         this._alives.reset()
+        this._scene.reset()
     }
 
     /** @param {IGameThing} what */
@@ -100,6 +96,8 @@ class GameState {
     /** @param {IPosition} target */
     setTarget( target ){
         this.screen.target = target
+        this.screen.cameraX = target.x
+        this.screen.cameraY = target.y
     }
 
     update() {
@@ -120,7 +118,9 @@ class GameState {
         }
 
         // lookat
-        this.lookAt(this.screen.target.x, this.screen.target.y)
+        if(this.screen.target){
+            this.lookAt(this.screen.target.x, this.screen.target.y)
+        }
 
         // troca as pilhas
         let tmp = this._scene
@@ -133,13 +133,16 @@ class GameState {
      * @param {IB2D} b 
      */
     render(b) {
-        this.tileMap.render(b,this) 
+        b.Cls(168, 253, 222)
+        b.SetCamera(this.screen.cameraX, this.screen.cameraY)
 
+        this.tileMap.render(b,this) 
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
             obj.render && obj.render(b,this)
         }
 
+        b.SetCamera(0,0)
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
             obj.renderUi && obj.renderUi(b,this)

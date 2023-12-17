@@ -9,7 +9,9 @@ let tileset
 const NADA      = 0
 const SOLIDO    = 0b0000_0001
 const BEIRA     = 0b0000_0010
-const INVISIVEL = 0b0000_0100
+const PLATAFORMA= 0b0000_0100
+const INVISIVEL = 0b0000_1000
+
 // [sólido, beirada]
 const tileInfo = [
     INVISIVEL,   // 0
@@ -49,11 +51,17 @@ class TileMap {
         this.height = this.tiles.length
     }
 
+    FromTiled(tiled){
+        let thisTile = 0
+        this.width = tiled["width"]
+        this.height = tiled["height"]
+        this.tiles = Array.from( {length:this.height}, x => Array.from( {length: this.width }, x => {
+            return tiled["layers"][0]["data"][thisTile++]
+        }))
+    }
+
     width = 1
     height = 1
-    constructor(){
-
-    }
     /**
      * @param {IB2D} b 
      * @param {GameState} s
@@ -78,8 +86,8 @@ class TileMap {
                 if(!(tileInfo[this.tiles[y][x]] & INVISIVEL)){
                     b.DrawImageFrame(
                         tileset,
-                        x*TILE_WIDTH - s.screen.cameraX,
-                        y*TILE_HEIGHT - s.screen.cameraY,
+                        x*TILE_WIDTH,
+                        y*TILE_HEIGHT,
                         this.tiles[y][x]-1
                     )
                 }
@@ -87,24 +95,26 @@ class TileMap {
         }
     }
 
-    fromX = 0
-    toX = 0
-    fromY = 0
-    toY = 0
+
     /**
      * retorna o número do tile com o qual um objeto colide, ou -1 caso não colida.
-     * @param {number[]} obj - é um retângulo representado como array [x,y,w,h] 
+     * @param {import("./interfaces").ICollider} obj - é um retângulo representado como array [x,y,w,h] 
      * @param {number[]} out - é uma array que recebe a intersecção, caso haja , no formato [x,y,w,h]
      * @param {number} filtro - uma combinação de filtros (SOLIDO, BEIRA, etc)
      */
     objectCollides(obj, out, filtro){
-        const [x,y,w,h] = obj
-        // testar só os tiles próximos...
+        let rect = [0,0,0,0]
+        obj.getRect(rect)
 
-        let fromX = (x - w/2)/TILE_WIDTH
-        let toX   = (x + w/2)/TILE_WIDTH
-        let fromY = (y - h/2)/TILE_HEIGHT
-        let toY   = (y + h/2)/TILE_HEIGHT
+        // 0 = x
+        // 1 = y
+        // 2 = w
+        // 3 = h
+        // testar só os tiles próximos...
+        let fromX = ( rect[0] - rect[2]/2)/TILE_WIDTH
+        let toX   = ( rect[0] + rect[2]/2)/TILE_WIDTH
+        let fromY = ( rect[1] - rect[3]/2)/TILE_HEIGHT
+        let toY   = ( rect[1] + rect[3]/2)/TILE_HEIGHT
 
         fromX = constrain(fromX-2, 0, this.width)|0
         toX = constrain(toX+2, 0, this.width)|0
@@ -119,7 +129,7 @@ class TileMap {
                 // esse tile...
                 const tileRect = [x*TILE_WIDTH,y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT]
                 // checa se colide...
-                if( rectsIntersect(tileRect, obj, out) )
+                if( rectsIntersect(tileRect, rect, out) )
                     return this.tiles[y][x]
             }
         }

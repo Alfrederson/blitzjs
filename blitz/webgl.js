@@ -122,6 +122,9 @@ class WGL_B2D {
     rotation = 0
     drawColor = [1,1,1,1]
 
+    camX = 0
+    camY = 0
+
     /** @type { image.IWGLImage | null} */
     lastImage = null
     lastFrame = 0
@@ -284,6 +287,16 @@ class WGL_B2D {
         this.drawColor[3] = a
     }
 
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+    SetCamera(x,y){
+        this.camX = x
+        this.camY = y
+    }    
+
     /**
      * @param {image.IWGLImage} imageHandler
      * @param {number} x
@@ -317,8 +330,8 @@ class WGL_B2D {
             this.programInfo,
             this.drawColor,
             this.rotation,
-            x,
-            y,
+            x - this.camX,
+            y - this.camY,
             this.scale[0],
             this.scale[1]
         )
@@ -355,8 +368,8 @@ class WGL_B2D {
             this.programInfo,
             this.drawColor,
             this.rotation,
-            x,
-            y,
+            x - this.camX,
+            y - this.camY,
             this.scale[0],
             this.scale[1]
         )

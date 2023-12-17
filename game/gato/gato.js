@@ -26,7 +26,6 @@ const CAT_MARGIN_X = (CAT_FRAME_WIDTH-CAT_WIDTH)/2
 const CAT_MARGIN_Y = (CAT_FRAME_HEIGHT-CAT_HEIGHT)/2
 
 class Gato {
-
     /** @type {Gato|undefined} */
     static gatoGlobal
 
@@ -85,6 +84,13 @@ class Gato {
         }
     }
 
+    getRect(rect){
+        rect[0] = this.x
+        rect[1] = this.y
+        rect[2] = CAT_WIDTH
+        rect[3] = CAT_HEIGHT
+    }
+
     hang(){
         if(this.touchingLedge){
             this.hanging = true
@@ -108,7 +114,7 @@ class Gato {
         this.y += this.sy 
         // corrigiu verticalmente.
         if(s.tileMap.objectCollides(
-            [this.x, this.y, CAT_WIDTH, CAT_HEIGHT],
+            this,
             out,
             FILTRO_SOLIDO
         )!==-1){
@@ -136,7 +142,7 @@ class Gato {
         this.x += this.sx
         // bora ver se ele bate nas paredes.
         if(s.tileMap.objectCollides(
-            [this.x, this.y, CAT_WIDTH, CAT_HEIGHT],
+            this,
             out,
             FILTRO_SOLIDO
         )!==-1){
@@ -146,12 +152,12 @@ class Gato {
 
         // bora ver se ele pode se pendurar
         if(s.tileMap.objectCollides(
-            [this.x,this.y, CAT_WIDTH,CAT_HEIGHT],
+            this,
             out,
             FILTRO_BEIRA
         )!==-1){
             // o gato tem que estar bem perto da beira.
-            this.touchingLedge = out[2] > 20
+            this.touchingLedge = out[2] > 20 && out[3] > 20
         }else{
             this.touchingLedge = false
         }
@@ -175,11 +181,10 @@ class Gato {
         b.SetAngle(0)
 
         b.DrawImageFrame(sprite,
-            this.x - s.screen.cameraX - CAT_MARGIN_X,
-            this.y - s.screen.cameraY - CAT_MARGIN_Y,
+            this.x - CAT_MARGIN_X,
+            this.y - CAT_MARGIN_Y,
             frame
         )
-
     }
 
 }

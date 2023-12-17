@@ -69,6 +69,9 @@ function loadImage(ctx, imageName, frameWidth, frameHeight){
             ctx.bindTexture(ctx.TEXTURE_2D,texture)
             ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.LINEAR)
             ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST)    
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_S, ctx.CLAMP_TO_EDGE)
+            ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_T, ctx.CLAMP_TO_EDGE)
+
             ctx.texImage2D(ctx.TEXTURE_2D,0,ctx.RGBA,ctx.RGBA,ctx.UNSIGNED_BYTE,image)
 
             _imageMap.set(imageName, result)
@@ -103,7 +106,7 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
     mat4.translate(
         modelViewMatrix,
         modelViewMatrix,
-        [(x + imageHandler.frameWidth/2),(y + imageHandler.frameHeight/2),0]
+        [(x + imageHandler.frameWidth/2)|0,(y + imageHandler.frameHeight/2)|0,0]
     )
     mat4.rotateZ(
         modelViewMatrix,

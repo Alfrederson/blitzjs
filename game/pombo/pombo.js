@@ -76,6 +76,13 @@ class Pombo {
         this.timer = 0
     }
 
+    getRect(rect){
+        rect[0] = this.x
+        rect[1] = this.y
+        rect[2] = POMBO_WIDTH
+        rect[3] = POMBO_HEIGHT
+    }
+
     /** @param {GameState} s */
     update(s){
         // esse pombo tem que parecer um pombo.
@@ -161,7 +168,7 @@ class Pombo {
         // tocando no chão/teto
         let out = [0,0,0,0]
         if(s.tileMap.objectCollides(
-            [this.x,this.y,POMBO_WIDTH,POMBO_HEIGHT],
+            this,
             out,
             FILTRO_SOLIDO
         )!==-1){
@@ -177,7 +184,7 @@ class Pombo {
 
         this.x += this.sx
         if(s.tileMap.objectCollides(
-            [this.x,this.y,POMBO_WIDTH,POMBO_HEIGHT],
+            this,
             out,
             FILTRO_SOLIDO
         )!==-1){
@@ -240,8 +247,8 @@ class Pombo {
         }
 
         b.DrawImageFrame(sprite,
-            this.x - s.screen.cameraX,
-            this.y - s.screen.cameraY,
+            this.x,
+            this.y,
             frame
         )
     }

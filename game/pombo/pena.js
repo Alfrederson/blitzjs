@@ -56,7 +56,7 @@ class Pena {
         // fazer alguma coisa pra remover esse monte de .cameraX?
         b.SetColor(1,1,1, 1 - this.timer / 60)
 
-        b.DrawImage(sprite, this.x - s.screen.cameraX, this.y - s.screen.cameraY)
+        b.DrawImage(sprite, this.x, this.y)
     }
 }
 
