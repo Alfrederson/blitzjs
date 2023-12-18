@@ -3,8 +3,9 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "mapa1.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "mapa0.tmx": {
@@ -19,12 +20,16 @@
             }
         },
         "mapa1.tmx": {
-            "scale": 0.4453125,
-            "selectedLayer": 0,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 478.3157894736843,
-                "y": 958.8771929824561
+                "x": 941.3333333333333,
+                "y": 1820
             }
+        },
+        "tiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "A:/svelte/testep5js/game/levels/1",
@@ -33,9 +38,15 @@
     "map.lastUsedExportFilter": "Ficheiros de mapa JavaScript (*.js)",
     "map.lastUsedFormat": "tmx",
     "openFiles": [
+        "tiles.tsx",
+        "mapa0.tmx",
+        "mapa1.tmx"
     ],
     "project": "jogo_do_gatinho.tiled-project",
     "recentFiles": [
+        "tiles.tsx",
+        "mapa0.tmx",
+        "mapa1.tmx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }

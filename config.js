@@ -1,5 +1,5 @@
-const SCREEN_WIDTH = 400
-const SCREEN_HEIGHT = 250
+const SCREEN_WIDTH = 300
+const SCREEN_HEIGHT = 600
 
 
 export {

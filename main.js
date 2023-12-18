@@ -6,28 +6,18 @@ import {
   Start,
   IB2D,
   IApp,
-  Preload
 } from "./blitz/blitz.js"
 
 import {
   AttachInput,
-  MouseX,
-  MouseY,
-  OnTouchEnd,
-  OnTouchMove,
-  OnTouchStart
 } from "./blitz/input.js"
 
 import { GameState } from "./game_state"
-
 import * as flags from "./game/flags.js"
-
-import { Gato } from "./game/gato/gato.js"
-import { Nub } from "./game/nub.js"
-import { Pombo } from "./game/pombo/pombo.js"
 
 import * as Level0 from "./game/levels/0/level.js"
 
+document.URL
 
 import {
   SCREEN_WIDTH,
@@ -63,8 +53,25 @@ flags.Load()
 console.log("Cleared levels: ")
 console.log(flags.flags.clearedLevels)
 
-
 Start(new CatGame(), new WGL_B2D())
+
+/** 
+ * @typedef {Object} AndroidHost 
+ * @property {function(string):void} toast
+ */
+
+/**@type {AndroidHost} */
+let host
+
+// @ts-ignore fonte: confia 👍
+if(host = window.Host){
+  host.toast("Mensagem de dentro do javascripto!")
+}
+
+// @ts-ignore
+window.tete = function(){
+  alert("tete")
+}
 
 export {
   SCREEN_WIDTH,
