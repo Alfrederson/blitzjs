@@ -12,8 +12,8 @@ const NUB_SIZE = 64
  */
 function ControlarGato(state, gato) {
 
-    let nubWalk = new Nub(NUB_SIZE*1.5, state.screen.height * 0.75 + NUB_SIZE/2)
-    let nubJump = new Nub(state.screen.width - NUB_SIZE*0.5, state.screen.height * 0.75 + NUB_SIZE/2)
+    let nubWalk = new Nub(NUB_SIZE*1.5, state.screen.height * 0.85 + NUB_SIZE/2)
+    let nubJump = new Nub(state.screen.width - NUB_SIZE*0.5, state.screen.height * 0.85 + NUB_SIZE/2)
 
     // Remove todos os event handleus
     ClearAll()

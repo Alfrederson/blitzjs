@@ -2,11 +2,10 @@ import { make } from "../../../blitz/blitz";
 import { GameState } from "../../../game_state";
 import { Gato } from "../../gato/gato";
 import { ControlarGato } from "../../gato/controle";
+import { Pombo } from "../../pombo/pombo";
 
-import mapa from "./mapa1"
+import mapa from "./mapa2"
 import { Sensor } from "../../sensor/sensor";
-
-import * as level2 from "../2/level"
 
 /*
     Load recebe um gamestate que pode ser manipulado à vontade.
@@ -18,12 +17,21 @@ import * as level2 from "../2/level"
 function Load(state){
     // reseta tudo
     state.reset()
-        
+
     // carrega o mapa...
     state.tileMap.FromTiled(mapa)
 
     // põe os itens, pombos...
-    
+    for(let x = 0; x < state.tileMap.width; x++){
+      for(let y = 0; y < state.tileMap.height-1; y++){
+        if(state.tileMap.tiles[y][x] == 0 && state.tileMap.tiles[y+1][x]!==0){
+          if(Math.random()>=0.85){
+            state.spawn( new Pombo(x * 32 + 16, y * 32 + 16) )
+          }
+        }
+      }
+    }
+
     // põe o gato...
     let gato = make( new Gato(), { x: 64, y: 32})
     state.spawn(
@@ -31,20 +39,20 @@ function Load(state){
     )
     state.setTarget( gato )
 
-
-    // cria os eventos / sensores...
+    // põe os sensores e eventos
+    // Botar isso em outro lugar?
     const sensores = {
-        "LevelExit": function({x,y,width,height}){
-            state.spawn(
-                new Sensor({
-                    x,y,width,height,
-                    target: gato,
-                    onEnter(){
-                        level2.Load(state)
-                    }
-                })
-            )
-        }
+        // "LevelExit": function({x,y,width,height}){
+        //     state.spawn(
+        //         new Sensor({
+        //             x,y,width,height,
+        //             target: gato,
+        //             onEnter(){
+        //                 level1.Load(state)
+        //             }
+        //         })
+        //     )
+        // },
     }
     let coisas = mapa.layers[1]?.objects
     if(coisas){
@@ -54,7 +62,7 @@ function Load(state){
         }
     }
 
-    // faz o gato ser controlável controlarem o gato.
+    // faz o gato ser controlável.
     ControlarGato( state, gato )    
 } 
 

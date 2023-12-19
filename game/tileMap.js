@@ -15,7 +15,7 @@ const INVISIVEL = 0b0000_1000
 // [sólido, beirada]
 const tileInfo = [
     INVISIVEL,   // 0
-    SOLIDO,
+    INVISIVEL | SOLIDO,
     BEIRA | INVISIVEL,
     SOLIDO,
     SOLIDO,

@@ -50,6 +50,7 @@ class Gato {
 
     touchingMap = -1
 
+    tired = false
 
     constructor(){
         Gato.gatoGlobal = this
@@ -92,7 +93,8 @@ class Gato {
     }
 
     hang(){
-        if(this.touchingLedge){
+        if(this.touchingLedge && !this.tired){
+            this.tired = true
             this.hanging = true
             this.jumping = false
         }
@@ -108,9 +110,11 @@ class Gato {
 
         // se o gatinho tá se pendurando,
         // ele não pode cair.
-        this.sy += 0.2
-        if(this.hanging) this.sy = 0
-
+        if(this.hanging){
+            this.sy = 0
+        }else{
+            this.sy += 0.2
+        }
         this.y += this.sy 
         // corrigiu verticalmente.
         if(s.tileMap.objectCollides(
@@ -119,26 +123,31 @@ class Gato {
             FILTRO_SOLIDO
         )!==-1){
             // batendo a cabeça no teto...
-            this.y += this.sy > 0 ? -out[3] : out[3]
+            this.y = Math.fround(this.y + (this.sy > 0 ? -out[3] : out[3]))
             this.sy = 0
+            this.tired=false
             this.grounded=true    
             this.jumping=false
-        }else{            
+        }else{                        
             this.grounded=false
         }
 
         if(this.grounded){
             if(this.walking){
-                this.sx += 0.4 * this.walkingSpeed
+                this.sx += 0.35 * this.walkingSpeed
             }else{
-                this.sx *= 0.8
+                this.sx *= 0.9
             }            
+        }else{
+            // air control
+            if(this.walking){
+                this.sx += 0.1 * this.walkingSpeed
+            }
         }
-                
+        if(this.hanging) this.sx = 0                
         this.sx = constrain(this.sx, -4,4)
 
         // se está pendurado, ele não sai do lugar...
-        if(this.hanging) this.sx = 0
         this.x += this.sx
         // bora ver se ele bate nas paredes.
         if(s.tileMap.objectCollides(
@@ -151,25 +160,26 @@ class Gato {
         }       
 
         // bora ver se ele pode se pendurar
-        if(s.tileMap.objectCollides(
+        let tmp_x = this.x
+        this.x += this.side < 0 ? 4 : -4
+        if(!this.tired && !this.grounded && s.tileMap.objectCollides(
             this,
             out,
-            FILTRO_BEIRA
+            FILTRO_SOLIDO
         )!==-1){
             // o gato tem que estar bem perto da beira.
-            this.touchingLedge = out[2] > 20 && out[3] > 20
+            this.touchingLedge = out[3] > 6
         }else{
             this.touchingLedge = false
         }
-
-
-
+        this.x = tmp_x    
     }
     /**
      * @param {IB2D} b
      * @param {GameState} s
      */
     render(b,s){
+        
         let frame = 0
         if(this.jumping)
             frame = 1

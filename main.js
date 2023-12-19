@@ -53,8 +53,6 @@ flags.Load()
 console.log("Cleared levels: ")
 console.log(flags.flags.clearedLevels)
 
-Start(new CatGame(), new WGL_B2D())
-
 /** 
  * @typedef {Object} AndroidHost 
  * @property {function(string):void} toast
@@ -66,12 +64,22 @@ let host
 // @ts-ignore fonte: confia 👍
 if(host = window.Host){
   host.toast("Mensagem de dentro do javascripto!")
+}else{
+  window.Host = {
+    toast(text){
+      console.log(text)
+    }
+  }
 }
 
 // @ts-ignore
 window.tete = function(){
   alert("tete")
 }
+
+Start(new CatGame(), new WGL_B2D())
+
+
 
 export {
   SCREEN_WIDTH,

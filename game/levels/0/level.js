@@ -34,7 +34,6 @@ function Load(state){
       }
     }
 
-    
     // põe o gato...
     let gato = make( new Gato(), { x: 64, y: 32})
     state.spawn(
@@ -42,27 +41,66 @@ function Load(state){
     )
     state.setTarget( gato )
 
-
-    // cria os eventos / sensores...
-
+    // põe os sensores e eventos
+    // Botar isso em outro lugar?
+    const sensores = {
+        "LevelExit": function({x,y,width,height}){
+            state.spawn(
+                new Sensor({
+                    x,y,width,height,
+                    target: gato,
+                    onEnter(){
+                        level1.Load(state)
+                    }
+                })
+            )
+        },
+        "PendurarNaBeira": function({x,y,width,height}){
+            state.spawn(
+                new Sensor({
+                    x,y,width,height,
+                    target: gato,
+                    onEnter(){
+                        // @ts-ignore
+                        state.message("se eu me pendurar lá na frente e depois pular aqui para trás...")
+                    }
+                })
+            )            
+        },
+        "SouGato": function({x,y,width,height}){
+            state.spawn(
+                new Sensor({
+                    x,y,width,height,
+                    target: gato,
+                    onEnter(){
+                        // @ts-ignore
+                        state.message("eu sou gato eu!")
+                    }
+                })
+            )
+        },
+        "Final": function({x,y,width,height}){
+            state.spawn(
+                new Sensor({
+                    x,y,width,height,
+                    target: gato,
+                    onEnter(){
+                        // @ts-ignore
+                        state.message("acho que acabou!")
+                    }
+                })
+            )    
+        }
+    }
     let coisas = mapa.layers[1]?.objects
     if(coisas){
         for(let coisa of coisas){
-            switch(coisa.name){
-                case "LevelExit":
-                    let sensor = new Sensor(coisa.x,coisa.y,coisa.width,coisa.height)
-                    sensor.onEnter(
-                        gato, function(){                            
-                            level1.Load( state )
-                        }
-                    )
-                    state.spawn( sensor )
-                break;
-            }
+            if(sensores[coisa.name])
+                sensores[coisa.name](coisa)
         }
     }
 
-    // faz o gato ser controlável controlarem o gato.
+    // faz o gato ser controlável.
     ControlarGato( state, gato )    
 } 
 

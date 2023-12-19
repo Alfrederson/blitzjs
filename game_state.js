@@ -48,14 +48,16 @@ class GameState {
     lookAt(x,y){
         let dx = x - this.screen.cameraX - this.screen.width/2
         let dy = y - this.screen.cameraY - this.screen.height/2
-
-        if (Math.abs(dx) <= 1)
-            dx = 0
-        if (Math.abs(dy) <= 1)
-            dy = 0
-        this.screen.cameraX += dx / 10
-        this.screen.cameraY += dy / 10
-
+        if (Math.abs(dx) <= 1){
+            this.screen.cameraX = x - this.screen.width/2
+        }else{
+            this.screen.cameraX += dx / 10
+        }
+        if (Math.abs(dy) <= 1){
+            this.screen.cameraY = y - this.screen.height/2
+        }else{
+            this.screen.cameraY += dy / 10
+        }
         this.screen.cameraX = constrain(
             this.screen.cameraX,
             0,
@@ -67,8 +69,6 @@ class GameState {
             this.tileMap.height*32 - this.screen.height
         )
     }
-
-
 
     tileMap = new TileMap()
 
@@ -141,13 +141,28 @@ class GameState {
             let obj = this._scene.at(i)
             obj.render && obj.render(b,this)
         }
-
         b.SetCamera(0,0)
         for (let i = 0; i < this._scene.top; i++) {
             let obj = this._scene.at(i)
             obj.renderUi && obj.renderUi(b,this)
         }
 
+        if(this.messageTimer){
+            this.messageTimer--
+            b.DrawText(this.messageText, 20,20)
+        }
+    }
+
+    messageText=""
+    messageTimer=0
+
+    /**
+     * 
+     * @param {string} msg 
+     */
+    message(msg){
+        this.messageText = msg
+        this.messageTimer = 120
     }
 }
 

@@ -106,7 +106,7 @@ function drawImage(ctx,imageHandler,programInfo, color, rotation, x, y, scaleX, 
     mat4.translate(
         modelViewMatrix,
         modelViewMatrix,
-        [(x + imageHandler.frameWidth/2)|0,(y + imageHandler.frameHeight/2)|0,0]
+        [(x + imageHandler.frameWidth/2),(y + imageHandler.frameHeight/2),0]
     )
     mat4.rotateZ(
         modelViewMatrix,

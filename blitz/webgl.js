@@ -8,6 +8,10 @@ import { vsSource, fsSource, initShaderProgram, loadShader } from "./webgl/shade
 import * as image from "./webgl/image"
 import * as draw from "./webgl/draw"
 import * as rtt from "./webgl/texrender"
+
+
+import * as canvas2d from "./webgl/canvas2d"
+
 /**
  * WebGL program with attribute and uniform locations.
  * @typedef {Object} WebGLProgramInfo
@@ -94,6 +98,10 @@ function setTextureCoordAttribute(ctx,buffers,programInfo,uv){
 
 /** @implements {IB2D} */
 class WGL_B2D {
+    // GAMBI
+    /** @type {any} */
+    ctx2d
+
     /** @type {boolean} */
     initialized = false
 
@@ -150,6 +158,10 @@ class WGL_B2D {
         /** @type {HTMLCanvasElement | null} */
         // @ts-ignore
         const canvas = document.getElementById(elementId);
+        
+        /** @type {HTMLCanvasElement | null} */    
+        // @ts-ignore
+        const textCanvas = document.getElementById("text")
 
         if(!canvas)
             throw "Não achei o elemento."
@@ -170,14 +182,25 @@ class WGL_B2D {
                 canvas.height = body.clientWidth/innerRatio
             }
         }
-
         letterBox()
+
 
         let _webgl = canvas.getContext("webgl")
         if(!_webgl)
             throw "Não consegui pegar um contexto de renderização."
-
         this.ctx = _webgl;
+
+        this.ctx2d = canvas2d.initializeText(
+            textCanvas,
+            canvas,
+            width,
+            height
+        )
+
+        if(!this.ctx2d)
+            throw "Não consegui um contexto de desenho 2D"
+
+        
 
         // iniciar os shadeus lá
         this.shaderProgram = initShaderProgram(this.ctx, vsSource, fsSource)
@@ -255,6 +278,7 @@ class WGL_B2D {
     Cls(r,g,b){
         this.lastImage = null
         this.lastFrame = 0
+        canvas2d.clear( this.ctx2d )
         draw.cls( this.ctx, r,g,b )
     }
 
@@ -368,8 +392,8 @@ class WGL_B2D {
             this.programInfo,
             this.drawColor,
             this.rotation,
-            x - this.camX,
-            y - this.camY,
+            (x - this.camX)|0,
+            (y - this.camY)|0,
             this.scale[0],
             this.scale[1]
         )
@@ -377,12 +401,15 @@ class WGL_B2D {
     
     /**
      * 
-     * @param {string} text 
+     * @param {string} txt 
      * @param {number} x 
      * @param {number} y 
      */
-    DrawText(text,x,y){
-
+    DrawText(txt,x,y){
+        canvas2d.drawText(
+            this.ctx2d,
+            x,y,txt
+        )
     }
 
     /**

@@ -7,6 +7,23 @@ import { rectsIntersect } from "../util";
  * Por enquanto é assim, depois vou implementar o grid
  * de objetos pra poder criar interações com todos eles.
  */
+
+
+/**
+ * @typedef {function():void} SensorHandler
+ */
+
+/**
+ * @typedef {Object} SensorParams
+ * @property {number} x
+ * @property {number} y
+ * @property {number} width
+ * @property {number} height
+ * @property {import("../interfaces").ICollider} target
+ * @property {SensorHandler} [onEnter]
+ * @property {SensorHandler} [onExit]
+ */
+
 class Sensor{
     dead = false
     x = 0
@@ -22,32 +39,38 @@ class Sensor{
     wasTriggered = false
     isTriggered = false
 
-    /**
-     * @type {function|undefined}
-     */
-    enterHandler = undefined
-    exitHandler = undefined
+    /** @type {SensorHandler|null}*/
+    enterHandler = null
+
+    /** @type {SensorHandler|null}*/
+    exitHandler = null
     
     /**
      * 
-     * @param {number} x 
-     * @param {number} y 
-     * @param {number} width 
-     * @param {number} height 
+     * @param {SensorParams} params 
      */
-    constructor(x,y,width,height){
+    constructor(params){
+        const {x,y,width,height, target, onEnter, onExit} = params
         this.rect = [x,y,width,height]
+
+        this.target = target
+        onEnter && (this.enterHandler = onEnter)
+        onExit && (this.exitHandler = onExit)
     }
 
     /**
      * @param {import("../interfaces").ICollider} target 
-     * @param {function} handler 
+     * @param {SensorHandler} handler 
      */
-    onEnter( target, handler ){
+    onEnter(target, handler ){
         this.target = target
         this.enterHandler = handler
     }
 
+    /**
+     * @param {import("../interfaces").ICollider} target 
+     * @param {SensorHandler} handler 
+     */
     onExit( target, handler ){
         this.target = target
         this.enterHandler = handler
